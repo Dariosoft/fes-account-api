@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: account-api
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/accounts}
+    username: ${DATABASE_USERNAME:accounts}
+    password: ${DATABASE_PASSWORD:accounts-local}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:accounts}
+    password: ${RABBITMQ_PASSWORD:accounts-local}
+    virtual-host: ${RABBITMQ_VIRTUAL_HOST:friendly}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,db
+  metrics:
+    tags:
+      application: ${spring.application.name}
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
