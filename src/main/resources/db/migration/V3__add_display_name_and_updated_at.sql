@@ -1,0 +1,6 @@
+ALTER TABLE accounts
+    ADD COLUMN display_name VARCHAR(255) NOT NULL DEFAULT '',
+    ADD COLUMN updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW();
+
+ALTER TABLE accounts
+    ALTER COLUMN display_name DROP DEFAULT;

@@ -33,3 +33,14 @@ management:
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
+account:
+  session:
+    cookie:
+      # Secure=true outside local; SameSite for cross-site tienda/panel coordination.
+      secure: ${ACCOUNT_SESSION_COOKIE_SECURE:false}
+      same-site: ${ACCOUNT_SESSION_COOKIE_SAME_SITE:Lax}
+  google:
+    client-id: ${GOOGLE_CLIENT_ID:}
+    client-secret: ${GOOGLE_CLIENT_SECRET:}
+    redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/accounts/auth/google/callback}
+    issuer: ${GOOGLE_ISSUER:https://accounts.google.com}
