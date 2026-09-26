@@ -19,6 +19,7 @@ Persiste únicamente en la base `accounts`, usa Flyway, prepara RabbitMQ para ev
 
 ## Reglas
 - Lee la skill `/java-springboot` y la spec activa, si existe, antes de tocar código.
+- Usa `/clean-architecture` al diseñar o modificar capas, límites, dependencias, casos de uso o adaptadores.
 - Este servicio es la fuente de verdad de identidades, credenciales y roles de acceso.
 - Nunca almacenes ni expongas contraseñas en claro; persiste únicamente hashes seguros.
 - Nunca escribas tablas de otros dominios; comunica cambios mediante contratos o eventos definidos.
@@ -27,6 +28,7 @@ Persiste únicamente en la base `accounts`, usa Flyway, prepara RabbitMQ para ev
 - Los manifiestos y secretos pertenecen a `infra`; coordina allí cambios de puerto, ruta o configuración.
 
 ## Al terminar cualquier tarea
+- Tras cambios no triviales de código de producción, aplica `/clean-code-guard` antes de finalizar.
 - Ejecuta `./mvnw verify`; incluye Checkstyle y los tests.
 - Prueba autenticación, autorización y validaciones afectadas; añade migraciones para cambios de esquema.
 - Comprueba que no se hayan roto `/accounts` ni los endpoints de Actuator.
