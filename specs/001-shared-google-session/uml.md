@@ -1,6 +1,6 @@
 # UML 001 — Sesión Google compartida
 
-Diagramas del código **implementado** en la rama `001/feat-shared-google-session` (no del plan aspiracional original). La organización es **Layered** (`controller` / `service` / `model` / `repository` / `config`), no Clean Architecture por capacidades.
+Diagramas del código **implementado** en la rama `001/feat-shared-google-session` (no del plan aspiracional original). La organización es **Layered** (`controller` / `service` / `model` / `repository` / `config`) con extensiones concretas (`client/oauth`, `http/cookie`), no Clean Architecture por capacidades.
 
 ## Diagrama de secuencia
 
@@ -25,7 +25,7 @@ sequenceDiagram
         GoogleLoginService-->>GoogleLoginController: Optional.empty()
         GoogleLoginController-->>Browser: 400 Bad Request
     else allowed origin
-        GoogleLoginService->>GoogleOAuthClient: authorizationUrl(OAuthState.encode)
+        GoogleLoginService->>GoogleOAuthClient: authorizationUrl(OAuthStateCodec.encode)
         GoogleOAuthClient-->>GoogleLoginService: Google authorize URL
         GoogleLoginService-->>GoogleLoginController: Optional.of(url)
         GoogleLoginController-->>Browser: 302 Location → Google
@@ -120,8 +120,8 @@ classDiagram
         +exchangeCode(code) Optional~GoogleProfile~
     }
 
-    class OAuthState {
-        <<utility>>
+    class OAuthStateCodec {
+        <<codec>>
         +encode(returnTo)$ String
         +returnTo(state)$ Optional~String~
     }
@@ -211,7 +211,7 @@ classDiagram
     GoogleLoginService --> AccountRepository
     GoogleLoginService --> SessionRepository
     GoogleLoginService --> AuthProperties
-    GoogleLoginService ..> OAuthState
+    GoogleLoginService ..> OAuthStateCodec
     GoogleLoginService ..> CompletedLogin
     GoogleLoginService ..> GoogleProfile
     GoogleLoginService ..> Account
@@ -236,5 +236,5 @@ classDiagram
 - **Session JSON** plano: `{ "authenticated": false }` o `{ "authenticated": true, "id", "email", "name" }` — sin objeto `account` anidado (`SessionResponse`).
 - **Logout**: `POST /accounts/logout` → **204 No Content** + `Set-Cookie` que borra `fes_session` (cuerpo vacío).
 - **Cookie** `fes_session`: HttpOnly, SameSite=Lax, Path=/, Domain=`SESSION_COOKIE_DOMAIN`, Secure=`SESSION_COOKIE_SECURE`.
-- **OAuth state**: Base64 URL-safe opaco de `UUID|returnTo` (`OAuthState`); no firmado.
+- **OAuth state**: Base64 URL-safe opaco de `UUID|returnTo` (`OAuthStateCodec` en `client/oauth`); no firmado.
 - **State inválido** en callback: redirect a `http://localhost` (comportamiento implementado en `GoogleLoginService.complete`).

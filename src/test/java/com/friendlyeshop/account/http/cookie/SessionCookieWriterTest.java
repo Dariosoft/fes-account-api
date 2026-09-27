@@ -1,4 +1,4 @@
-package com.friendlyeshop.account.controller;
+package com.friendlyeshop.account.http.cookie;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import com.friendlyeshop.account.config.AuthProperties;

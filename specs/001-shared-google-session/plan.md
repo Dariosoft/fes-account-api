@@ -13,7 +13,7 @@ Desglose técnico de `spec.md` para `account-api`. Este plan documenta el **dise
 
 ## Principios de diseño
 
-- **Layered Architecture** (implementado): paquetes técnicos `controller` / `service` / `model` (+ `model.dto`) / `repository` / `config`. Entidades JPA en `model`; repositorios Spring Data; sin puertos Clean Architecture ni paquetes por capacidad.
+- **Layered Architecture** (implementado): paquetes técnicos base `controller` / `service` / `model` (+ `model.dto`) / `repository` / `config`, extendidos con `client/oauth` para la integración OAuth externa y `http/cookie` para transporte HTTP de cookies. Entidades JPA en `model`; repositorios Spring Data; sin puertos Clean Architecture ni paquetes por capacidad.
 - **Separación auth / cuentas** (`AGENTS.md`): controladores delgados; login/logout/sesión distintos de la gestión de cuenta; la cuenta es la fuente de verdad de identidad.
 - **Spring Boot**: inyección por constructor, `@ConfigurationProperties` (`fes.auth`), DTOs JSON (`SessionResponse`) sin exponer entidades JPA en HTTP, `@Transactional` en servicios que mutan, tests JUnit 5 / Mockito / MockMvc / `@SpringBootTest`.
 - Mensajes visibles a la persona en español; nombres de código y documentación técnica en inglés.
@@ -22,8 +22,10 @@ Desglose técnico de `spec.md` para `account-api`. Este plan documenta el **dise
 ## Arquitectura implementada (Layered)
 
 ```
-controller  → GoogleLoginController, SessionController, SessionCookieWriter, AccountController
-service     → GoogleLoginService, SessionService, GoogleOAuthClient, OAuthState
+controller  → GoogleLoginController, SessionController, AccountController
+service     → GoogleLoginService, SessionService
+client      → oauth/GoogleOAuthClient, oauth/OAuthStateCodec
+http        → cookie/SessionCookieWriter
 model       → Account, Session (+ dto: SessionResponse, CompletedLogin, GoogleProfile)
 repository  → AccountRepository, SessionRepository (Spring Data JpaRepository)
 config      → AuthProperties, AuthConfig, CorsConfig
@@ -38,14 +40,14 @@ config      → AuthProperties, AuthConfig, CorsConfig
 
 - `AccountRepository` (Spring Data): `findByGoogleSub`, `save` / `findById` heredados de `JpaRepository`.
 - `SessionRepository` (Spring Data): CRUD por id; la validez se filtra en `SessionService` con `isValid`, no con query dedicada en el repositorio.
-- `GoogleOAuthClient` (clase concreta `@Component`): URL de autorización; intercambio de `code` + verificación de id_token (`sub`, email, name). Fallos → `Optional.empty()`, sin excepciones al controlador.
+- `GoogleOAuthClient` (`client/oauth`, clase concreta `@Component`): URL de autorización; intercambio de `code` + verificación de id_token (`sub`, email, name). Fallos → `Optional.empty()`, sin excepciones al controlador.
 - Tiempo: `Instant.now()` en servicios (sin `Clock` inyectado).
 - `AuthProperties` (`fes.auth`): client id/secret, cookie domain, orígenes, `cookieSecure` (`SESSION_COOKIE_SECURE`), `publicApiBaseUrl` (`PUBLIC_API_BASE_URL`).
 
 ### Servicios (casos de uso)
 
-1. **`GoogleLoginService.start`** (**RF-4**, **RF-5**, **RF-16**): valida `return_to` contra orígenes exactos de `BROWSER_ORIGINS`; si falta o no es permitido → `Optional.empty()` → HTTP 400. Si ok → `OAuthState.encode(returnTo)` (Base64 opaco `UUID|returnTo`, **no firmado**) + URL de Google vía `GoogleOAuthClient.authorizationUrl`.
-2. **`GoogleLoginService.complete`** (**RF-3**, **RF-6**, **RF-7**, **RF-8**, **RF-9**, **RF-10**, **RF-21**, **RF-22**): decodifica `state`; si el state es inválido → redirect a **`http://localhost`** (comportamiento implementado). Si Google falla/cancela → sin sesión + redirect a `return_to?login_error=1`. Si éxito → upsert por `googleSub` (`Account.open` / `updateProfile`); **nueva sesión** sin tocar previas; `CompletedLogin` con URL y `sessionId` para Set-Cookie.
+1. **`GoogleLoginService.start`** (**RF-4**, **RF-5**, **RF-16**): valida `return_to` contra orígenes exactos de `BROWSER_ORIGINS`; si falta o no es permitido → `Optional.empty()` → HTTP 400. Si ok → `OAuthStateCodec.encode(returnTo)` (Base64 opaco `UUID|returnTo`, **no firmado**) + URL de Google vía `GoogleOAuthClient.authorizationUrl`.
+2. **`GoogleLoginService.complete`** (**RF-3**, **RF-6**, **RF-7**, **RF-8**, **RF-9**, **RF-10**, **RF-21**, **RF-22**): decodifica `state` con `OAuthStateCodec.returnTo`; si el state es inválido → redirect a **`http://localhost`** (comportamiento implementado). Si Google falla/cancela → sin sesión + redirect a `return_to?login_error=1`. Si éxito → upsert por `googleSub` (`Account.open` / `updateProfile`); **nueva sesión** sin tocar previas; `CompletedLogin` con URL y `sessionId` para Set-Cookie.
 3. **`SessionService.read`** (**RF-11**, **RF-12**, **RF-15**, **RF-18**): lee id de cookie; ausente/inválida/caducada → `{ authenticated: false }`; válida → JSON **plano** `{ authenticated: true, id, email, name }` (`SessionResponse`, sin objeto `account` anidado).
 4. **`SessionService.logout`** (**RF-13**, **RF-14**, **RF-19**): si hay id, `revoke` + save; el controlador siempre responde **204 No Content** y borra la cookie `fes_session`.
 
@@ -108,7 +110,7 @@ Manejo de errores HTTP: 400 en inicio de login inválido (**RF-5**); callback si
 
 Usar `google-api-client` del `pom.xml` en la clase concreta `GoogleOAuthClient`:
 
-- Inicio: `GoogleAuthorizationCodeRequestUrl` con client id, redirect URI `{PUBLIC_API_BASE_URL}/accounts/login/google/callback`, scopes `openid email profile`, `state` Base64 opaco (`OAuthState`: `UUID|returnTo`, **no firmado**).
+- Inicio: `GoogleAuthorizationCodeRequestUrl` con client id, redirect URI `{PUBLIC_API_BASE_URL}/accounts/login/google/callback`, scopes `openid email profile`, `state` Base64 opaco (`OAuthStateCodec`: `UUID|returnTo`, **no firmado**).
 - Callback: intercambiar `code` con `GoogleAuthorizationCodeTokenRequest`; verificar id_token con `GoogleIdTokenVerifier` (audience = client id); leer `sub`, email, name → `GoogleProfile`.
 - Secretos solo desde env (`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`); nunca en frontends ni logs.
 - Sin allowlist: éxito de Google ⇒ entrada permitida (**RF-3**).
@@ -138,12 +140,13 @@ com.friendlyeshop.account
     AccountController
     GoogleLoginController
     SessionController
-    SessionCookieWriter
   service
     GoogleLoginService      (start / complete)
     SessionService          (read / logout)
-    GoogleOAuthClient
-    OAuthState
+  client
+    oauth/ GoogleOAuthClient, OAuthStateCodec
+  http
+    cookie/ SessionCookieWriter
   model
     Account, Session
     dto/ SessionResponse, CompletedLogin, GoogleProfile
@@ -153,7 +156,7 @@ com.friendlyeshop.account
     AuthProperties, AuthConfig, CorsConfig
 ```
 
-Controladores delgados: HTTP ↔ servicios; la cookie se escribe/borra en `SessionCookieWriter` desde el controlador.
+Controladores delgados: HTTP ↔ servicios; la cookie se escribe/borra en `http/cookie/SessionCookieWriter` desde el controlador.
 
 ## Pruebas (criterios de finalización)
 
@@ -169,7 +172,7 @@ Cobertura automatizada de los RF:
 ## Orden de implementación (seguido)
 
 1. Migración y entidades JPA Account/Session + Spring Data repos.
-2. Properties (`PUBLIC_API_BASE_URL`, `SESSION_COOKIE_SECURE`, …), CORS y `SessionCookieWriter`.
+2. Properties (`PUBLIC_API_BASE_URL`, `SESSION_COOKIE_SECURE`, …), CORS y `http/cookie/SessionCookieWriter`.
 3. `SessionService` + endpoints session/logout (**RF-11**–**RF-15**, **RF-18**, **RF-19**).
 4. `GoogleOAuthClient` + `GoogleLoginService` + endpoints login (**RF-3**–**RF-10**, **RF-16**, **RF-17**, **RF-21**, **RF-22**).
 5. **RF-1**, **RF-2**, **RF-20** y tests de aceptación.

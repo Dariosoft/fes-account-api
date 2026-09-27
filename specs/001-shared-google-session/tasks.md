@@ -46,9 +46,10 @@ Implementación paso a paso de `spec.md` / `plan.md`. Cada tarea ~20–30 min. N
   `@ConfigurationProperties(prefix = "fes.auth")` enlazado a `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `SESSION_COOKIE_DOMAIN`, `BROWSER_ORIGINS`, `PUBLIC_API_BASE_URL` y `SESSION_COOKIE_SECURE` (HTTPS vs Minikube HTTP). Secretos no logueados.  
   **Done when:** con env de test las properties se inyectan; falta de orígenes/client id falla el arranque o la validación de forma explícita (sin secretos en logs).
 
-- [x] **T8. Helper de cookie `fes_session`**  
+- [x] **T8. Writer HTTP de cookie `fes_session`**  
   Cubierta: **RF-8**, **RF-14**, **RF-15**.  
   Escritura/borrado HttpOnly, SameSite=Lax, Path=/, Domain=`SESSION_COOKIE_DOMAIN`; Secure según `SESSION_COOKIE_SECURE`; logout con Max-Age=0 mismos atributos.  
+  *Nota implementación:* `SessionCookieWriter` vive en `http/cookie`, no en `config`; usa properties, pero su responsabilidad es construir cookies HTTP.  
   **Done when:** test unitario o de slice web verifica atributos de set-cookie y clear-cookie según properties HTTP vs Secure.
 
 - [x] **T9. CORS con credenciales para orígenes configurados**  
@@ -72,7 +73,7 @@ Implementación paso a paso de `spec.md` / `plan.md`. Cada tarea ~20–30 min. N
 
 - [x] **T12. Endpoints GET /accounts/session y POST /accounts/logout**  
   Cubierta: **RF-11**, **RF-12**, **RF-13**, **RF-14**, **RF-18**, **RF-19**.  
-  `SessionController`; contrato JSON plano `{authenticated:false}` / `{authenticated:true,id,email,name}`; logout **204** + clear cookie vía `SessionCookieWriter`.  
+  `SessionController`; contrato JSON plano `{authenticated:false}` / `{authenticated:true,id,email,name}`; logout **204** + clear cookie vía `http/cookie/SessionCookieWriter`.  
   **Done when:** tests `@WebMvcTest` o MockMvc verifican rutas, cuerpos (session), 204 vacío (logout) y headers Set-Cookie de logout.
 
 ## Login Google
@@ -80,12 +81,12 @@ Implementación paso a paso de `spec.md` / `plan.md`. Cada tarea ~20–30 min. N
 - [x] **T13. GoogleOAuthClient concreto y fake para tests**  
   Cubierta: **RF-3**.  
   Clase concreta: URL de autorización; intercambio de `code` + verificación (subject, email, name); errores como `Optional.empty()`. Fake/`TokenExchange` stub sin red.  
-  *Nota implementación:* sin puerto `GoogleAuthClient` de Clean Architecture.  
+  *Nota implementación:* sin puerto `GoogleAuthClient` de Clean Architecture; vive en `client/oauth` como integración externa.  
   **Done when:** el fake puede simular éxito y fallo/cancelación; ningún test de CI llama a la red de Google.
 
 - [x] **T14. GoogleLoginService.start**  
   Cubierta: **RF-4**, **RF-5**.  
-  Valida `return_to` contra orígenes exactos de `BROWSER_ORIGINS`; inválido/ausente → vacío → 400; ok → `OAuthState` Base64 opaco (`UUID|returnTo`, no firmado) + URL a Google.  
+  Valida `return_to` contra orígenes exactos de `BROWSER_ORIGINS`; inválido/ausente → vacío → 400; ok → `OAuthStateCodec` Base64 opaco (`UUID|returnTo`, no firmado) + URL a Google.  
   *Nota implementación:* método `GoogleLoginService.start`, no clase `StartGoogleLogin`.  
   **Done when:** tests unitarios: origen permitido genera URL; origen inválido o ausente no llama a Google y devuelve error de validación.
 
@@ -108,6 +109,7 @@ Implementación paso a paso de `spec.md` / `plan.md`. Cada tarea ~20–30 min. N
 - [x] **T18. GoogleOAuthClient real (google-api-client)**  
   Cubierta: **RF-3**, **RF-17**.  
   Implementación con `GoogleAuthorizationCodeRequestUrl` / token request / `GoogleIdTokenVerifier`; redirect URI `{PUBLIC_API_BASE_URL}/accounts/login/google/callback`; scopes openid email profile; secretos solo desde env.  
+  *Nota implementación:* `GoogleOAuthClient` y `OAuthStateCodec` viven en `client/oauth`; `OAuthStateCodec` es un mecanismo del protocolo OAuth, no un `util` genérico.  
   **Done when:** bean cableado; test con fake/verificador mock confirma lectura de `sub`/email/name; no hay secretos en código ni logs de prueba.
 
 - [x] **T19. Endpoint GET /accounts/login/google/callback**  

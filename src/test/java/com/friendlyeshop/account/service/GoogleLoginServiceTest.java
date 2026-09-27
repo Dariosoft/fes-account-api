@@ -5,12 +5,14 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import com.friendlyeshop.account.client.oauth.GoogleOAuthClient;
+import com.friendlyeshop.account.client.oauth.OAuthStateCodec;
+import com.friendlyeshop.account.config.AuthProperties;
 import com.friendlyeshop.account.model.Account;
+import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.model.dto.CompletedLogin;
 import com.friendlyeshop.account.model.dto.GoogleProfile;
 import com.friendlyeshop.account.repository.AccountRepository;
-import com.friendlyeshop.account.config.AuthProperties;
-import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.repository.SessionRepository;
 import java.util.HashMap;
 import java.util.List;
@@ -59,7 +61,7 @@ class GoogleLoginServiceTest {
         assertThat(redirectUrl).isPresent();
         assertThat(redirectUrl.get()).startsWith("https://accounts.google.com/");
         String state = redirectUrl.get().substring(redirectUrl.get().indexOf("state=") + "state=".length());
-        assertThat(OAuthState.returnTo(state)).contains(STORE);
+        assertThat(OAuthStateCodec.returnTo(state)).contains(STORE);
     }
 
     @Test
@@ -74,7 +76,7 @@ class GoogleLoginServiceTest {
         rememberSaves();
         when(googleOAuthClient.exchangeCode("code"))
                 .thenReturn(Optional.of(new GoogleProfile("sub-1", "a@example.com", "Ada")));
-        String state = OAuthState.encode(STORE);
+        String state = OAuthStateCodec.encode(STORE);
 
         CompletedLogin first = service.complete("code", state);
         when(googleOAuthClient.exchangeCode("code"))
@@ -97,7 +99,7 @@ class GoogleLoginServiceTest {
     void failedGoogleExchangeRedirectsWithLoginErrorAndCreatesNothing() {
         when(googleOAuthClient.exchangeCode("cancel")).thenReturn(Optional.empty());
 
-        CompletedLogin result = service.complete("cancel", OAuthState.encode(STORE));
+        CompletedLogin result = service.complete("cancel", OAuthStateCodec.encode(STORE));
 
         assertThat(result.success()).isFalse();
         assertThat(result.sessionId()).isNull();

@@ -1,12 +1,12 @@
-package com.friendlyeshop.account.service;
+package com.friendlyeshop.account.client.oauth;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
-public final class OAuthState {
-    private OAuthState() {
+public final class OAuthStateCodec {
+    private OAuthStateCodec() {
     }
 
     public static String encode(String returnTo) {

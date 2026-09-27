@@ -1,5 +1,6 @@
 package com.friendlyeshop.account.controller;
 
+import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
 import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.model.dto.CompletedLogin;
 import com.friendlyeshop.account.service.GoogleLoginService;

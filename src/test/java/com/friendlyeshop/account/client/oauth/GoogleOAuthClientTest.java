@@ -1,4 +1,4 @@
-package com.friendlyeshop.account.service;
+package com.friendlyeshop.account.client.oauth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import com.friendlyeshop.account.config.AuthProperties;

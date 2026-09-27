@@ -8,11 +8,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.friendlyeshop.account.repository.AccountRepository;
-import com.friendlyeshop.account.service.GoogleOAuthClient;
+import com.friendlyeshop.account.client.oauth.GoogleOAuthClient;
+import com.friendlyeshop.account.client.oauth.OAuthStateCodec;
+import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
 import com.friendlyeshop.account.model.dto.GoogleProfile;
-import com.friendlyeshop.account.service.OAuthState;
-import com.friendlyeshop.account.controller.SessionCookieWriter;
+import com.friendlyeshop.account.repository.AccountRepository;
 import jakarta.servlet.http.Cookie;
 import java.util.Optional;
 import org.hamcrest.Matchers;
@@ -59,7 +59,7 @@ class SharedGoogleSessionAcceptanceTest {
 
     @Test
     void uniqueAccountSharedSessionAndLogout() throws Exception {
-        String state = OAuthState.encode("http://store.example.test");
+        String state = OAuthStateCodec.encode("http://store.example.test");
 
         MvcResult login = mockMvc.perform(get("/accounts/login/google/callback")
                         .param("code", "ok")

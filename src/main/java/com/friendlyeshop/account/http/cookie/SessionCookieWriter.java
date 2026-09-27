@@ -1,4 +1,4 @@
-package com.friendlyeshop.account.controller;
+package com.friendlyeshop.account.http.cookie;
 
 import com.friendlyeshop.account.config.AuthProperties;
 import java.time.Duration;

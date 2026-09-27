@@ -1,11 +1,13 @@
 package com.friendlyeshop.account.service;
 
+import com.friendlyeshop.account.client.oauth.GoogleOAuthClient;
+import com.friendlyeshop.account.client.oauth.OAuthStateCodec;
+import com.friendlyeshop.account.config.AuthProperties;
 import com.friendlyeshop.account.model.Account;
+import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.model.dto.CompletedLogin;
 import com.friendlyeshop.account.model.dto.GoogleProfile;
 import com.friendlyeshop.account.repository.AccountRepository;
-import com.friendlyeshop.account.config.AuthProperties;
-import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.repository.SessionRepository;
 import java.time.Instant;
 import java.util.Optional;
@@ -38,12 +40,12 @@ public class GoogleLoginService {
         if (returnTo == null || returnTo.isBlank() || !isAllowedOrigin(returnTo)) {
             return Optional.empty();
         }
-        return Optional.of(googleOAuthClient.authorizationUrl(OAuthState.encode(returnTo)));
+        return Optional.of(googleOAuthClient.authorizationUrl(OAuthStateCodec.encode(returnTo)));
     }
 
     @Transactional
     public CompletedLogin complete(String code, String state) {
-        Optional<String> returnTo = OAuthState.returnTo(state);
+        Optional<String> returnTo = OAuthStateCodec.returnTo(state);
         if (returnTo.isEmpty()) {
             return CompletedLogin.failed("http://localhost");
         }

@@ -1,4 +1,4 @@
-package com.friendlyeshop.account.service;
+package com.friendlyeshop.account.client.oauth;
 
 import com.friendlyeshop.account.config.AuthProperties;
 import com.friendlyeshop.account.model.dto.GoogleProfile;

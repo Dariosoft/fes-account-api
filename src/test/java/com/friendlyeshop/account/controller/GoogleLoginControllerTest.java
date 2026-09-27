@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import com.friendlyeshop.account.config.AuthConfig;
 import com.friendlyeshop.account.config.CorsConfig;
+import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
 import com.friendlyeshop.account.model.dto.CompletedLogin;
 import com.friendlyeshop.account.service.GoogleLoginService;
 import java.util.Optional;
