@@ -1,29 +1,30 @@
 package com.friendlyeshop.account;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.friendlyeshop.account.account.application.AccountRepository;
-import com.friendlyeshop.account.auth.google.application.FakeGoogleAuthClient;
-import com.friendlyeshop.account.auth.google.application.GoogleAuthClient;
-import com.friendlyeshop.account.auth.google.application.StartGoogleLogin;
-import com.friendlyeshop.account.session.web.SessionCookieWriter;
+import com.friendlyeshop.account.repository.AccountRepository;
+import com.friendlyeshop.account.service.GoogleOAuthClient;
+import com.friendlyeshop.account.model.dto.GoogleProfile;
+import com.friendlyeshop.account.service.OAuthState;
+import com.friendlyeshop.account.controller.SessionCookieWriter;
 import jakarta.servlet.http.Cookie;
+import java.util.Optional;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.testcontainers.junit.jupiter.Container;
@@ -45,20 +46,20 @@ class SharedGoogleSessionAcceptanceTest {
     private MockMvc mockMvc;
 
     @Autowired
-    private FakeGoogleAuthClient fakeGoogleAuthClient;
-
-    @Autowired
     private AccountRepository accountRepository;
+
+    @MockitoBean
+    private GoogleOAuthClient googleOAuthClient;
 
     @BeforeEach
     void resetGoogle() {
-        fakeGoogleAuthClient.succeedWith(
-                new GoogleAuthClient.GoogleIdentity("shared-sub", "shared@example.com", "Shared"));
+        when(googleOAuthClient.exchangeCode(any()))
+                .thenReturn(Optional.of(new GoogleProfile("shared-sub", "shared@example.com", "Shared")));
     }
 
     @Test
     void uniqueAccountSharedSessionAndLogout() throws Exception {
-        String state = StartGoogleLogin.encodeState("http://store.example.test");
+        String state = OAuthState.encode("http://store.example.test");
 
         MvcResult login = mockMvc.perform(get("/accounts/login/google/callback")
                         .param("code", "ok")
@@ -79,9 +80,9 @@ class SharedGoogleSessionAcceptanceTest {
                         .param("state", state))
                 .andExpect(status().isFound());
 
-        var first = accountRepository.findByGoogleSubject("shared-sub").orElseThrow();
-        var secondLoginAccount = accountRepository.findByGoogleSubject("shared-sub").orElseThrow();
-        assertThat(secondLoginAccount.id()).isEqualTo(first.id());
+        var first = accountRepository.findByGoogleSub("shared-sub").orElseThrow();
+        var secondLoginAccount = accountRepository.findByGoogleSub("shared-sub").orElseThrow();
+        assertThat(secondLoginAccount.getId()).isEqualTo(first.getId());
 
         mockMvc.perform(get("/accounts/session")
                         .cookie(sessionCookie)
@@ -119,14 +120,5 @@ class SharedGoogleSessionAcceptanceTest {
         int start = setCookie.indexOf(prefix) + prefix.length();
         int end = setCookie.indexOf(';', start);
         return setCookie.substring(start, end);
-    }
-
-    @TestConfiguration
-    static class FakeGoogleConfig {
-        @Bean
-        @Primary
-        FakeGoogleAuthClient fakeGoogleAuthClient() {
-            return new FakeGoogleAuthClient();
-        }
     }
 }

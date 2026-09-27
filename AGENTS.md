@@ -18,8 +18,10 @@ Persiste únicamente en la base `accounts`, usa Flyway, prepara RabbitMQ para ev
 - Crea nuevas migraciones Flyway; no edites migraciones ya aplicadas. Hibernate solo valida el esquema.
 
 ## Reglas
-- Lee la skill `/java-springboot` y la spec activa, si existe, antes de tocar código.
-- Usa `/clean-architecture` al diseñar o modificar capas, límites, dependencias, casos de uso o adaptadores.
+- Lee la spec activa, si existe, antes de tocar código.
+- Para implementar usa solo `/spring-boot-project-creator` en su opción Layered y `/clean-code-guard`.
+- La opción Layered organiza el paquete `com.friendlyeshop.account` en `controller/`, `service/`, `repository/`, `model/`, `model/dto/`, `config/` y `exception/`.
+- No uses la opción DDD de esa skill ni regeneres el proyecto con Spring Initializr al modificar este servicio.
 - Este servicio es la fuente de verdad de identidades, credenciales y roles de acceso.
 - Nunca almacenes ni expongas contraseñas en claro; persiste únicamente hashes seguros.
 - Nunca escribas tablas de otros dominios; comunica cambios mediante contratos o eventos definidos.
