@@ -6,6 +6,9 @@ import org.junit.jupiter.api.Test;
 class AccountControllerTest {
     @Test
     void identifiesService() {
-        assertThat(new AccountController().accounts()).containsEntry("service", "account-api");
+        assertThat(new AccountController().accounts())
+                .containsEntry("service", "account-api")
+                .containsEntry("status", "ready")
+                .containsKey("accounts");
     }
 }
