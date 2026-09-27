@@ -12,6 +12,7 @@ sequenceDiagram
     participant GoogleLoginController
     participant GoogleLoginService
     participant GoogleOAuthClient
+    participant HttpTokenExchange
     participant Google as Google OAuth
     participant AccountRepository
     participant SessionRepository
@@ -38,12 +39,16 @@ sequenceDiagram
             GoogleLoginController-->>Browser: 302 http://localhost
         else valid state, Google fails or cancels
             GoogleLoginService->>GoogleOAuthClient: exchangeCode(code)
+            GoogleOAuthClient->>HttpTokenExchange: exchange(code, callbackUri)
+            HttpTokenExchange-->>GoogleOAuthClient: Optional.empty()
             GoogleOAuthClient-->>GoogleLoginService: Optional.empty()
             GoogleLoginService-->>GoogleLoginController: CompletedLogin.failed(returnTo?login_error=1)
             GoogleLoginController-->>Browser: 302 return_to?login_error=1
         else success
             GoogleLoginService->>GoogleOAuthClient: exchangeCode(code)
-            GoogleOAuthClient->>Google: token + id_token verify
+            GoogleOAuthClient->>HttpTokenExchange: exchange(code, callbackUri)
+            HttpTokenExchange->>Google: token + id_token verify
+            HttpTokenExchange-->>GoogleOAuthClient: GoogleProfile
             GoogleOAuthClient-->>GoogleLoginService: GoogleProfile
             GoogleLoginService->>AccountRepository: findByGoogleSub / save (upsert)
             GoogleLoginService->>SessionRepository: save(Session.open)
@@ -69,7 +74,7 @@ sequenceDiagram
 
 ## Diagrama de clases
 
-Clases reales del paquete `com.friendlyeshop.account` involucradas en auth/sesión.
+Clases reales del paquete `com.friendlyeshop.account` involucradas en auth/sesión. El diagrama muestra relaciones arquitectónicas relevantes y omite dependencias transitivas o de variables locales cuando ya están explicadas por un colaborador principal.
 
 ```mermaid
 classDiagram
@@ -224,17 +229,12 @@ classDiagram
     GoogleLoginService --> AuthProperties
     GoogleLoginService ..> OAuthStateCodec
     GoogleLoginService ..> CompletedLogin
-    GoogleLoginService ..> GoogleProfile
-    GoogleLoginService ..> Account
-    GoogleLoginService ..> Session
     SessionService --> AccountRepository
     SessionService --> SessionRepository
     SessionService ..> SessionResponse
-    SessionService ..> Account
-    SessionService ..> Session
     GoogleOAuthClient --> AuthProperties
     GoogleOAuthClient --> TokenExchange
-    GoogleOAuthClient ..> GoogleProfile
+    TokenExchange ..> GoogleProfile
     HttpTokenExchange ..|> TokenExchange
     HttpTokenExchange --> AuthProperties
     HttpTokenExchange ..> GoogleProfile
