@@ -116,8 +116,19 @@ classDiagram
     class GoogleOAuthClient {
         <<component>>
         -AuthProperties authProperties
+        -TokenExchange tokenExchange
         +authorizationUrl(state) String
         +exchangeCode(code) Optional~GoogleProfile~
+    }
+
+    class TokenExchange {
+        <<interface>>
+        +exchange(code, redirectUri) Optional~GoogleProfile~
+    }
+
+    class HttpTokenExchange {
+        -AuthProperties authProperties
+        +exchange(code, redirectUri) Optional~GoogleProfile~
     }
 
     class OAuthStateCodec {
@@ -222,7 +233,11 @@ classDiagram
     SessionService ..> Account
     SessionService ..> Session
     GoogleOAuthClient --> AuthProperties
+    GoogleOAuthClient --> TokenExchange
     GoogleOAuthClient ..> GoogleProfile
+    HttpTokenExchange ..|> TokenExchange
+    HttpTokenExchange --> AuthProperties
+    HttpTokenExchange ..> GoogleProfile
     AccountRepository ..> Account
     SessionRepository ..> Session
     AuthConfig ..> AuthProperties

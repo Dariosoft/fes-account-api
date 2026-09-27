@@ -24,7 +24,7 @@ Desglose técnico de `spec.md` para `account-api`. Este plan documenta el **dise
 ```
 controller  → GoogleLoginController, SessionController, AccountController
 service     → GoogleLoginService, SessionService
-client      → oauth/GoogleOAuthClient, oauth/OAuthStateCodec
+client      → oauth/GoogleOAuthClient, oauth/TokenExchange, oauth/HttpTokenExchange, oauth/OAuthStateCodec
 http        → cookie/SessionCookieWriter
 model       → Account, Session (+ dto: SessionResponse, CompletedLogin, GoogleProfile)
 repository  → AccountRepository, SessionRepository (Spring Data JpaRepository)
@@ -40,7 +40,8 @@ config      → AuthProperties, AuthConfig, CorsConfig
 
 - `AccountRepository` (Spring Data): `findByGoogleSub`, `save` / `findById` heredados de `JpaRepository`.
 - `SessionRepository` (Spring Data): CRUD por id; la validez se filtra en `SessionService` con `isValid`, no con query dedicada en el repositorio.
-- `GoogleOAuthClient` (`client/oauth`, clase concreta `@Component`): URL de autorización; intercambio de `code` + verificación de id_token (`sub`, email, name). Fallos → `Optional.empty()`, sin excepciones al controlador.
+- `GoogleOAuthClient` (`client/oauth`, clase concreta `@Component`): URL de autorización; delega el intercambio de `code` a `TokenExchange`. Fallos → `Optional.empty()`, sin excepciones al controlador.
+- `HttpTokenExchange` (`client/oauth`): implementación concreta del intercambio OAuth HTTP; verifica id_token (`sub`, email, name) y lo transforma a `GoogleProfile`.
 - Tiempo: `Instant.now()` en servicios (sin `Clock` inyectado).
 - `AuthProperties` (`fes.auth`): client id/secret, cookie domain, orígenes, `cookieSecure` (`SESSION_COOKIE_SECURE`), `publicApiBaseUrl` (`PUBLIC_API_BASE_URL`).
 
@@ -144,7 +145,7 @@ com.friendlyeshop.account
     GoogleLoginService      (start / complete)
     SessionService          (read / logout)
   client
-    oauth/ GoogleOAuthClient, OAuthStateCodec
+    oauth/ GoogleOAuthClient, TokenExchange, HttpTokenExchange, OAuthStateCodec
   http
     cookie/ SessionCookieWriter
   model
@@ -165,7 +166,7 @@ Cobertura automatizada de los RF:
 - Unitarios de modelo/servicios: upsert cuenta (**RF-6**, **RF-7**, **RF-21**), multi-sesión (**RF-22**), invalidación/caducidad, validación de `return_to` (**RF-4**, **RF-5**).
 - Web (MockMvc): rutas **RF-16**–**RF-20**, 400 sin redirect, callback con error → redirect + `login_error`, set/clear cookie, logout 204.
 - Integración con DB de test: migraciones, unicidad `google_sub`, sesión compartida por cookie.
-- `GoogleOAuthClient` con `TokenExchange` inyectable/fake en tests (sin red en CI).
+- `GoogleOAuthClient` con `TokenExchange` top-level inyectable/fake en tests (sin red en CI); `HttpTokenExchange` separado para la implementación real.
 - `AccountControllerTest` conserva **RF-20**.
 - `./mvnw verify` (Checkstyle + tests) en verde.
 

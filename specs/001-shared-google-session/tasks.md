@@ -81,7 +81,7 @@ Implementación paso a paso de `spec.md` / `plan.md`. Cada tarea ~20–30 min. N
 - [x] **T13. GoogleOAuthClient concreto y fake para tests**  
   Cubierta: **RF-3**.  
   Clase concreta: URL de autorización; intercambio de `code` + verificación (subject, email, name); errores como `Optional.empty()`. Fake/`TokenExchange` stub sin red.  
-  *Nota implementación:* sin puerto `GoogleAuthClient` de Clean Architecture; vive en `client/oauth` como integración externa.  
+  *Nota implementación:* sin puerto `GoogleAuthClient` de Clean Architecture; `GoogleOAuthClient`, `TokenExchange` y `HttpTokenExchange` viven en `client/oauth` como integración externa, en archivos separados.  
   **Done when:** el fake puede simular éxito y fallo/cancelación; ningún test de CI llama a la red de Google.
 
 - [x] **T14. GoogleLoginService.start**  
@@ -109,7 +109,7 @@ Implementación paso a paso de `spec.md` / `plan.md`. Cada tarea ~20–30 min. N
 - [x] **T18. GoogleOAuthClient real (google-api-client)**  
   Cubierta: **RF-3**, **RF-17**.  
   Implementación con `GoogleAuthorizationCodeRequestUrl` / token request / `GoogleIdTokenVerifier`; redirect URI `{PUBLIC_API_BASE_URL}/accounts/login/google/callback`; scopes openid email profile; secretos solo desde env.  
-  *Nota implementación:* `GoogleOAuthClient` y `OAuthStateCodec` viven en `client/oauth`; `OAuthStateCodec` es un mecanismo del protocolo OAuth, no un `util` genérico.  
+  *Nota implementación:* `GoogleOAuthClient`, `TokenExchange`, `HttpTokenExchange` y `OAuthStateCodec` viven en `client/oauth`; `OAuthStateCodec` es un mecanismo del protocolo OAuth, no un `util` genérico.  
   **Done when:** bean cableado; test con fake/verificador mock confirma lectura de `sub`/email/name; no hay secretos en código ni logs de prueba.
 
 - [x] **T19. Endpoint GET /accounts/login/google/callback**  

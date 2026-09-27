@@ -31,7 +31,7 @@ class GoogleOAuthClientTest {
         payload.set("email", "ada@example.com");
         payload.set("name", "Ada");
 
-        GoogleProfile identity = GoogleOAuthClient.toIdentity(payload);
+        GoogleProfile identity = HttpTokenExchange.toIdentity(payload);
 
         assertThat(identity.subject()).isEqualTo("google-sub");
         assertThat(identity.email()).isEqualTo("ada@example.com");
