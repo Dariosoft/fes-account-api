@@ -7,7 +7,9 @@ import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Getter;
 
+@Getter
 @Entity
 @Table(name = "accounts")
 public class Account {
@@ -57,30 +59,6 @@ public class Account {
         this.email = requireText(email, "email");
         this.displayName = requireText(displayName, "displayName");
         this.updatedAt = Objects.requireNonNull(now, "now");
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getGoogleSub() {
-        return googleSub;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
     }
 
     private static String requireText(String value, String name) {

@@ -8,7 +8,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 import java.util.UUID;
+import lombok.Getter;
 
+@Getter
 @Entity
 @Table(name = "sessions")
 public class Session {
@@ -53,23 +55,4 @@ public class Session {
         return revokedAt == null && at.isBefore(expiresAt);
     }
 
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getAccountId() {
-        return accountId;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getExpiresAt() {
-        return expiresAt;
-    }
-
-    public Instant getRevokedAt() {
-        return revokedAt;
-    }
 }
