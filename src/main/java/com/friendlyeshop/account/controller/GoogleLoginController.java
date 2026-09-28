@@ -1,5 +1,6 @@
 package com.friendlyeshop.account.controller;
 
+import com.friendlyeshop.account.constants.OAuthParameters;
 import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
 import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.model.dto.CompletedLogin;
@@ -28,7 +29,8 @@ public class GoogleLoginController {
     }
 
     @GetMapping
-    public ResponseEntity<Void> start(@RequestParam(value = "return_to", required = false) String returnTo) {
+    public ResponseEntity<Void> start(
+            @RequestParam(value = OAuthParameters.RETURN_TO, required = false) String returnTo) {
         Optional<String> redirectUrl = googleLoginService.start(returnTo);
         if (redirectUrl.isEmpty()) {
             return ResponseEntity.badRequest().build();
@@ -38,8 +40,8 @@ public class GoogleLoginController {
 
     @GetMapping("/callback")
     public ResponseEntity<Void> callback(
-            @RequestParam(value = "code", required = false) String code,
-            @RequestParam(value = "state", required = false) String state) {
+            @RequestParam(value = OAuthParameters.CODE, required = false) String code,
+            @RequestParam(value = OAuthParameters.STATE, required = false) String state) {
         CompletedLogin result = googleLoginService.complete(code, state);
         ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(result.redirectUrl()));

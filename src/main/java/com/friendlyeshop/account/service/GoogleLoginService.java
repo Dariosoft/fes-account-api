@@ -3,6 +3,8 @@ package com.friendlyeshop.account.service;
 import com.friendlyeshop.account.client.oauth.GoogleOAuthClient;
 import com.friendlyeshop.account.client.oauth.OAuthStateCodec;
 import com.friendlyeshop.account.config.AuthProperties;
+import com.friendlyeshop.account.constants.LoginRedirects;
+import com.friendlyeshop.account.constants.OAuthParameters;
 import com.friendlyeshop.account.model.Account;
 import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.model.dto.CompletedLogin;
@@ -47,7 +49,7 @@ public class GoogleLoginService {
     public CompletedLogin complete(String code, String state) {
         Optional<String> returnTo = OAuthStateCodec.returnTo(state);
         if (returnTo.isEmpty()) {
-            return CompletedLogin.failed("http://localhost");
+            return CompletedLogin.failed(LoginRedirects.FALLBACK_URL);
         }
         String destination = returnTo.get();
         Optional<GoogleProfile> profile = googleOAuthClient.exchangeCode(code);
@@ -78,7 +80,7 @@ public class GoogleLoginService {
 
     private static String withLoginError(String returnTo) {
         return UriComponentsBuilder.fromUriString(returnTo)
-                .queryParam("login_error", "1")
+                .queryParam(OAuthParameters.LOGIN_ERROR, OAuthParameters.LOGIN_ERROR_VALUE)
                 .build(true)
                 .toUriString();
     }

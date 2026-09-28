@@ -1,6 +1,7 @@
 package com.friendlyeshop.account.client.oauth;
 
 import com.friendlyeshop.account.config.AuthProperties;
+import com.friendlyeshop.account.constants.GoogleClaims;
 import com.friendlyeshop.account.model.dto.GoogleProfile;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
@@ -46,8 +47,8 @@ final class HttpTokenExchange implements TokenExchange {
     }
 
     static GoogleProfile toIdentity(GoogleIdToken.Payload payload) {
-        String email = (String) payload.get("email");
-        String name = (String) payload.get("name");
+        String email = (String) payload.get(GoogleClaims.EMAIL);
+        String name = (String) payload.get(GoogleClaims.NAME);
         if (name == null || name.isBlank()) {
             name = email;
         }

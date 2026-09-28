@@ -48,9 +48,9 @@ class GoogleOAuthClientTest {
                     return Optional.of(new GoogleProfile("sub", "a@example.com", "Ada"));
                 });
 
-        assertThat(client.exchangeCode("auth-code")).isPresent().get()
-                .extracting(GoogleProfile::subject)
-                .isEqualTo("sub");
+        Optional<GoogleProfile> profile = client.exchangeCode("auth-code");
+        assertThat(profile).isPresent();
+        assertThat(profile.orElseThrow().subject()).isEqualTo("sub");
         assertThat(client.exchangeCode("")).isEmpty();
     }
 
