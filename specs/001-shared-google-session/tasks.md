@@ -119,20 +119,15 @@ Implementación paso a paso de `spec.md` / `plan.md`. Cada tarea ~20–30 min. N
 
 ## Conservación, aceptación y cierre
 
-- [x] **T20. Conservar GET /accounts sin cambio de contrato**  
-  Cubierta: **RF-20**.  
-  Asegurar que `AccountController` y su test existentes siguen verdes; no retirar la ruta.  
-  **Done when:** `AccountControllerTest` (o equivalente) pasa y `GET /accounts` responde igual que antes de este corte.
-
 - [x] **T21. Tests de aceptación de unicidad y sesión compartida**  
   Cubierta: **RF-1**, **RF-2**, **RF-15**, **RF-22**.  
   Integración: una sola fila por `google_sub`; cookie de dominio padre; dos consultas de sesión ven la misma sesión activa; logout invalida para ambos consumidores lógicos.  
   **Done when:** suite de integración en verde cubre unicidad, multi-sesión por cuenta y consulta autenticada vía cookie.
 
 - [x] **T22. Batería final `./mvnw verify` y checklist de RF**  
-  Cubierta: **RF-1** … **RF-22**.  
+  Cubierta: **RF-1** … **RF-19**, **RF-21**, **RF-22**.  
   Ejecutar verify (Checkstyle + tests); revisar que cada RF tiene al menos una prueba automatizada verde según criterios de finalización.  
-  **Done when:** `./mvnw verify` pasa y la checklist RF-1–RF-22 está marcada como cubierta por tests (sin RF abiertos).
+  **Done when:** `./mvnw verify` pasa y la checklist de RF vigentes está marcada como cubierta por tests (sin RF abiertos).
 
   RF coverage (automated, `./mvnw verify` green — 42 tests):
   - RF-1 / RF-2: Account entity + JPA uniqueness + acceptance
@@ -143,9 +138,8 @@ Implementación paso a paso de `spec.md` / `plan.md`. Cada tarea ~20–30 min. N
   - RF-11 / RF-12 / RF-18: SessionService.read + SessionControllerTest
   - RF-13 / RF-14 / RF-19: SessionService.logout + SessionControllerTest (204)
   - RF-15: CORS + acceptance shared cookie across origins
-  - RF-20: AccountControllerTest
 
 - [ ] **T23. Demostración manual del flujo principal**  
-  Cubierta: **RF-3**, **RF-4**, **RF-6**, **RF-7**, **RF-8**, **RF-9**, **RF-12**, **RF-13**, **RF-14**, **RF-16**, **RF-18**, **RF-19**, **RF-20**.  
-  Flujo: login con `return_to` permitido → sesión abierta → GET session (id/email/name) → logout **204** borra cookie; comprobar primer alta, no duplicado, cualquier Google, `GET /accounts` intacto; sin puerta panel en este servicio.  
+  Cubierta: **RF-3**, **RF-4**, **RF-6**, **RF-7**, **RF-8**, **RF-9**, **RF-12**, **RF-13**, **RF-14**, **RF-16**, **RF-18**, **RF-19**.  
+  Flujo: login con `return_to` permitido → sesión abierta → GET session (id/email/name) → logout **204** borra cookie; comprobar primer alta, no duplicado, cualquier Google; sin puerta panel en este servicio.  
   **Done when:** demo documentada (pasos y resultado) cumple los criterios de finalización de la spec.

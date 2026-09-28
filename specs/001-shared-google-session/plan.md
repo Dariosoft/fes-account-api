@@ -5,7 +5,6 @@ Desglose técnico de `spec.md` para `account-api`. Este plan documenta el **dise
 ## Estado actual relevante
 
 - Spring Boot 4.1 / Java 25, paquete `com.friendlyeshop.account`.
-- `GET /accounts` ya existe en `AccountController` y se conserva (**RF-20**).
 - Migración Flyway `V2__google_accounts_and_sessions.sql`: `google_sub`, `display_name`, `password_hash` nullable; tabla `sessions`.
 - Dependencias: Web, JPA, Flyway, Validation, `google-api-client` / `google-http-client-gson`. Sin Spring Security OAuth2 Client; OAuth vía `GoogleOAuthClient` concreto.
 - Configuración vía env: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `SESSION_COOKIE_DOMAIN`, `BROWSER_ORIGINS`, `PUBLIC_API_BASE_URL`, `SESSION_COOKIE_SECURE`. Procedimiento en `docs/google-oauth.md`.
@@ -22,7 +21,7 @@ Desglose técnico de `spec.md` para `account-api`. Este plan documenta el **dise
 ## Arquitectura implementada (Layered)
 
 ```
-controller  → GoogleLoginController, SessionController, AccountController
+controller  → GoogleLoginController, SessionController
 service     → GoogleLoginService, SessionService
 client      → oauth/GoogleOAuthClient, oauth/TokenExchange, oauth/HttpTokenExchange, oauth/OAuthStateCodec
 http        → cookie/SessionCookieWriter
@@ -77,11 +76,10 @@ Entidades JPA en `model`; repositorios Spring Data en `repository` (sin capa gat
 
 ## API HTTP (capa controller)
 
-Base path `/accounts`. Controladores: `AccountController` (cuentas); `GoogleLoginController` y `SessionController` (auth/sesión).
+Base path `/accounts`. Controladores: `GoogleLoginController` y `SessionController` (auth/sesión).
 
 | Método y ruta | Comportamiento | RF |
 |---|---|---|
-| `GET /accounts` | Sin cambio de contrato actual | **RF-20** |
 | `GET /accounts/login/google?return_to=` | Valida origen; 302 a Google o 400 | **RF-4**, **RF-5**, **RF-16** |
 | `GET /accounts/login/google/callback` | Callback OAuth; set-cookie + 302 a `return_to` (o `return_to` + `login_error=1`); state inválido → `http://localhost` | **RF-6**–**RF-10**, **RF-17**, **RF-21**, **RF-22** |
 | `GET /accounts/session` | JSON sesión plano; lee cookie `fes_session`; CORS con credenciales | **RF-11**, **RF-12**, **RF-15**, **RF-18** |
@@ -138,7 +136,6 @@ Documentación operativa: mantener `docs/google-oauth.md` como fuente del proced
 com.friendlyeshop.account
   AccountApiApplication
   controller
-    AccountController
     GoogleLoginController
     SessionController
   service
@@ -164,10 +161,9 @@ Controladores delgados: HTTP ↔ servicios; la cookie se escribe/borra en `http/
 Cobertura automatizada de los RF:
 
 - Unitarios de modelo/servicios: upsert cuenta (**RF-6**, **RF-7**, **RF-21**), multi-sesión (**RF-22**), invalidación/caducidad, validación de `return_to` (**RF-4**, **RF-5**).
-- Web (MockMvc): rutas **RF-16**–**RF-20**, 400 sin redirect, callback con error → redirect + `login_error`, set/clear cookie, logout 204.
+- Web (MockMvc): rutas **RF-16**–**RF-19**, 400 sin redirect, callback con error → redirect + `login_error`, set/clear cookie, logout 204.
 - Integración con DB de test: migraciones, unicidad `google_sub`, sesión compartida por cookie.
 - `GoogleOAuthClient` con `TokenExchange` top-level inyectable/fake en tests (sin red en CI); `HttpTokenExchange` separado para la implementación real.
-- `AccountControllerTest` conserva **RF-20**.
 - `./mvnw verify` (Checkstyle + tests) en verde.
 
 ## Orden de implementación (seguido)
@@ -176,7 +172,7 @@ Cobertura automatizada de los RF:
 2. Properties (`PUBLIC_API_BASE_URL`, `SESSION_COOKIE_SECURE`, …), CORS y `http/cookie/SessionCookieWriter`.
 3. `SessionService` + endpoints session/logout (**RF-11**–**RF-15**, **RF-18**, **RF-19**).
 4. `GoogleOAuthClient` + `GoogleLoginService` + endpoints login (**RF-3**–**RF-10**, **RF-16**, **RF-17**, **RF-21**, **RF-22**).
-5. **RF-1**, **RF-2**, **RF-20** y tests de aceptación.
+5. **RF-1**, **RF-2** y tests de aceptación.
 6. Demo manual del flujo principal (T23; criterios de finalización de la spec).
 
 ## Fuera de alcance (confirmado)
@@ -206,6 +202,5 @@ Pantallas tienda/panel, puerta panel-api, publicación infra, otros métodos de 
 | RF-17 | Endpoint callback (`PUBLIC_API_BASE_URL`) |
 | RF-18 | Endpoint sesión |
 | RF-19 | Endpoint logout (204) |
-| RF-20 | Conservar `GET /accounts` |
 | RF-21 | Actualización email/nombre en reuso |
 | RF-22 | Nueva sesión sin invalidar anteriores |

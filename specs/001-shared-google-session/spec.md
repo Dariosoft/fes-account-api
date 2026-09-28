@@ -35,7 +35,6 @@ Friendly E-Shop necesita una sola cuenta por persona, propiedad de este servicio
 - RF-17: EL SISTEMA expondrá el retorno de Google en `GET /accounts/login/google/callback` como URI de redirección de Google.
 - RF-18: EL SISTEMA expondrá la consulta de sesión en `GET /accounts/session`.
 - RF-19: EL SISTEMA expondrá el cierre de sesión en `POST /accounts/logout`.
-- RF-20: EL SISTEMA conservará el `GET /accounts` ya existente sin retirarlo en este corte.
 - RF-21: CUANDO se reutilice una cuenta en un nuevo login con Google y Google devuelva un nombre o un correo distintos a los guardados, EL SISTEMA actualizará el nombre y el correo de esa cuenta.
 - RF-22: CUANDO una persona inicie sesión de nuevo, EL SISTEMA conservará las sesiones anteriores de esa cuenta.
 
@@ -76,7 +75,7 @@ Friendly E-Shop necesita una sola cuenta por persona, propiedad de este servicio
 ## Criterios de finalización
 - Todos los RF resueltos (sin marcadores de aclaración) tienen prueba automatizada en verde.
 - Demostración manual del flujo principal: iniciar login con Google con un destino de retorno permitido, volver con sesión abierta, consultar id/correo/nombre, y cerrar la sesión borrando la cookie.
-- Queda comprobado que el primer ingreso crea la cuenta, que la misma persona de Google no duplica la cuenta, que cualquier cuenta de Google puede entrar, que `GET /accounts` se conserva, y que la puerta de login del panel no se implementa en este servicio.
+- Queda comprobado que el primer ingreso crea la cuenta, que la misma persona de Google no duplica la cuenta, que cualquier cuenta de Google puede entrar y que la puerta de login del panel no se implementa en este servicio.
 
 ## Dudas abiertas
 Ninguna.

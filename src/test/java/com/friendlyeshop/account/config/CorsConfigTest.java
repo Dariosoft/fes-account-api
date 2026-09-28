@@ -3,19 +3,25 @@ package com.friendlyeshop.account.config;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import com.friendlyeshop.account.controller.AccountController;
+import com.friendlyeshop.account.controller.SessionController;
+import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
+import com.friendlyeshop.account.service.SessionService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = AccountController.class)
-@Import({CorsConfig.class, AuthConfig.class})
+@WebMvcTest(controllers = SessionController.class)
+@Import({CorsConfig.class, AuthConfig.class, SessionCookieWriter.class})
 class CorsConfigTest {
     @Autowired
     private MockMvc mockMvc;
+
+    @MockitoBean
+    private SessionService sessionService;
 
     @Test
     void allowsConfiguredOriginWithCredentials() throws Exception {
