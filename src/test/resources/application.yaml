@@ -1,0 +1,8 @@
+fes:
+  auth:
+    google-client-id: test-client-id
+    google-client-secret: test-client-secret
+    session-cookie-domain: .example.test
+    browser-origins: http://store.example.test,http://panel.example.test
+    cookie-secure: false
+    public-api-base-url: http://api.example.test

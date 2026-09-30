@@ -33,3 +33,11 @@ management:
 server:
   port: ${SERVER_PORT:8080}
   shutdown: graceful
+fes:
+  auth:
+    google-client-id: ${GOOGLE_CLIENT_ID:}
+    google-client-secret: ${GOOGLE_CLIENT_SECRET:}
+    session-cookie-domain: ${SESSION_COOKIE_DOMAIN:}
+    browser-origins: ${BROWSER_ORIGINS:}
+    cookie-secure: ${SESSION_COOKIE_SECURE:false}
+    public-api-base-url: ${PUBLIC_API_BASE_URL:}
