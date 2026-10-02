@@ -65,9 +65,25 @@ class GoogleLoginServiceTest {
     }
 
     @Test
+    void allowedOriginWithPathIsAcceptedAndKeepsThePath() {
+        when(googleOAuthClient.authorizationUrl(any())).thenAnswer(invocation -> {
+            String state = invocation.getArgument(0);
+            return "https://accounts.google.com/o/oauth2/v2/auth?state=" + state;
+        });
+
+        String returnTo = STORE + "/catalog";
+        Optional<String> redirectUrl = service.start(returnTo);
+
+        assertThat(redirectUrl).isPresent();
+        String state = redirectUrl.get().substring(redirectUrl.get().indexOf("state=") + "state=".length());
+        assertThat(OAuthStateCodec.returnTo(state)).contains(returnTo);
+    }
+
+    @Test
     void missingOrForeignOriginDoesNotCallGoogle() {
         assertThat(service.start(null)).isEmpty();
         assertThat(service.start("http://evil.example")).isEmpty();
+        assertThat(service.start("http://evil.example/catalog")).isEmpty();
         verify(googleOAuthClient, never()).authorizationUrl(any());
     }
 

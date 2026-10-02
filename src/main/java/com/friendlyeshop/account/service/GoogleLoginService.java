@@ -11,6 +11,7 @@ import com.friendlyeshop.account.model.dto.CompletedLogin;
 import com.friendlyeshop.account.model.dto.GoogleProfile;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.SessionRepository;
+import java.net.URI;
 import java.time.Instant;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,25 @@ public class GoogleLoginService {
     }
 
     private boolean isAllowedOrigin(String returnTo) {
-        return authProperties.getBrowserOrigins().stream().anyMatch(returnTo::equals);
+        String candidate = originOf(returnTo);
+        return candidate != null
+                && authProperties.getBrowserOrigins().stream()
+                        .map(this::originOf)
+                        .anyMatch(candidate::equals);
+    }
+
+    private String originOf(String url) {
+        try {
+            URI uri = URI.create(url);
+            if (uri.getScheme() == null || uri.getHost() == null) {
+                return null;
+            }
+            return uri.getPort() == -1
+                    ? uri.getScheme() + "://" + uri.getHost()
+                    : uri.getScheme() + "://" + uri.getHost() + ":" + uri.getPort();
+        } catch (IllegalArgumentException ex) {
+            return null;
+        }
     }
 
     private static String withLoginError(String returnTo) {
