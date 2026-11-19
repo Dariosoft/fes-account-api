@@ -42,8 +42,9 @@ class SessionServiceTest {
 
     @Test
     void returnsAccountWhenSessionIsValid() {
-        Account account = Account.open("sub", "ada@example.com", "Ada", NOW);
-        Session session = Session.open(account.getId(), NOW);
+        Instant now = Instant.now();
+        Account account = Account.open("sub", "ada@example.com", "Ada", now);
+        Session session = Session.open(account.getId(), now);
         when(sessionRepository.findById(session.getId())).thenReturn(Optional.of(session));
         when(accountRepository.findById(account.getId())).thenReturn(Optional.of(account));
 
