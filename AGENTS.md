@@ -8,6 +8,10 @@ Persiste únicamente en la base `accounts`, usa Flyway, prepara RabbitMQ para ev
 - Ejecutar: `./mvnw spring-boot:run`
 - Tests: `./mvnw test`
 - Compilar y verificar: `./mvnw verify`
+- Cobertura: `./mvnw verify` genera `target/site/jacoco/jacoco.xml`, que SonarQube lee por defecto, y exige un mínimo de 80 % de líneas del bundle; requiere Docker para los tests de Testcontainers.
+- SonarQube: `./mvnw sonar:sonar` con `SONAR_TOKEN` en el entorno; el `projectKey` y la organización están en `pom.xml`. En CI se ejecuta en cada evento y falla si no pasa el Quality Gate.
+- SBOM: `./mvnw cyclonedx:makeBom` genera `target/bom.json`; el CI lo escanea con Trivy.
+- Hook local: activar una vez por clon con `git config core.hooksPath .githooks`; bloquea commits con credenciales obvias.
 - Lint: `./mvnw checkstyle:check`; también se ejecuta automáticamente en la fase `validate`.
 
 ## Estilo y convenciones
