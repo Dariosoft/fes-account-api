@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/accounts/login/google")
+@RequestMapping("/login/google")
 public class GoogleLoginController {
     private final GoogleLoginService googleLoginService;
 
