@@ -12,17 +12,4 @@ public record ShopRequest(
         @Size(max = Shop.DESCRIPTION_MAX_LENGTH,
                 message = "La descripción no puede superar los " + Shop.DESCRIPTION_MAX_LENGTH + " caracteres.")
         String description) {
-
-    public ShopRequest {
-        name = name == null ? null : name.strip();
-        description = normalizeDescription(description);
-    }
-
-    private static String normalizeDescription(String value) {
-        if (value == null) {
-            return null;
-        }
-        String stripped = value.strip();
-        return stripped.isEmpty() ? null : stripped;
-    }
 }

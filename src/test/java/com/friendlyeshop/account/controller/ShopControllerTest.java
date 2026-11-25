@@ -60,8 +60,8 @@ class ShopControllerTest {
     }
 
     @Test
-    void savingShopDelegatesTrimmedDataToService() throws Exception {
-        when(shopService.saveOwnShop(SESSION_ID, new ShopDetails("Tienda de Ada", "Cosas bonitas")))
+    void savingShopDelegatesRequestDataToService() throws Exception {
+        when(shopService.saveOwnShop(SESSION_ID, new ShopDetails("  Tienda de Ada  ", "  Cosas bonitas  ")))
                 .thenReturn(new ShopResponse("Tienda de Ada", "Cosas bonitas"));
 
         mockMvc.perform(put("/accounts/shop")
@@ -72,7 +72,7 @@ class ShopControllerTest {
                 .andExpect(jsonPath("$.name").value("Tienda de Ada"))
                 .andExpect(jsonPath("$.description").value("Cosas bonitas"));
 
-        verify(shopService).saveOwnShop(SESSION_ID, new ShopDetails("Tienda de Ada", "Cosas bonitas"));
+        verify(shopService).saveOwnShop(SESSION_ID, new ShopDetails("  Tienda de Ada  ", "  Cosas bonitas  "));
     }
 
     @Test
@@ -158,8 +158,8 @@ class ShopControllerTest {
     }
 
     @Test
-    void savesBlankDescriptionAsNull() throws Exception {
-        when(shopService.saveOwnShop(SESSION_ID, new ShopDetails("Tienda", null)))
+    void savingShopPassesBlankDescriptionToService() throws Exception {
+        when(shopService.saveOwnShop(SESSION_ID, new ShopDetails("Tienda", "   ")))
                 .thenReturn(new ShopResponse("Tienda", null));
 
         mockMvc.perform(put("/accounts/shop")
@@ -169,7 +169,7 @@ class ShopControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value(nullValue()));
 
-        verify(shopService).saveOwnShop(SESSION_ID, new ShopDetails("Tienda", null));
+        verify(shopService).saveOwnShop(SESSION_ID, new ShopDetails("Tienda", "   "));
     }
 
     private void assertValidationError(String body, String expectedMessage) throws Exception {
