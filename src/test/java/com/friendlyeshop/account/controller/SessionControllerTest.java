@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.friendlyeshop.account.config.AuthConfig;
 import com.friendlyeshop.account.config.CorsConfig;
 import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
-import com.friendlyeshop.account.model.dto.SessionResponse;
+import com.friendlyeshop.account.model.dto.out.SessionResponse;
 import com.friendlyeshop.account.service.SessionService;
 import jakarta.servlet.http.Cookie;
 import java.util.UUID;

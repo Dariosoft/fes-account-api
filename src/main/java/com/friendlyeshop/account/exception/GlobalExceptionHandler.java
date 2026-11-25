@@ -1,6 +1,6 @@
 package com.friendlyeshop.account.exception;
 
-import com.friendlyeshop.account.model.dto.ErrorResponse;
+import com.friendlyeshop.account.model.dto.out.ErrorResponse;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
@@ -16,13 +16,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotAuthenticatedException.class)
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse handleNotAuthenticated(NotAuthenticatedException exception) {
-        return new ErrorResponse(NotAuthenticatedException.ERROR_CODE, exception.getMessage());
+        return ErrorResponse.from(NotAuthenticatedException.ERROR_CODE, exception.getMessage());
     }
 
     @ExceptionHandler(ShopNotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleShopNotFound(ShopNotFoundException exception) {
-        return new ErrorResponse(exception.getError(), exception.getMessage());
+        return ErrorResponse.from(exception.getError(), exception.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -32,6 +32,6 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .distinct()
                 .collect(Collectors.joining(" "));
-        return new ErrorResponse(VALIDATION_ERROR, message);
+        return ErrorResponse.from(VALIDATION_ERROR, message);
     }
 }

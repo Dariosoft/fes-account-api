@@ -2,7 +2,7 @@ package com.friendlyeshop.account.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import com.friendlyeshop.account.model.dto.ShopDetails;
+import com.friendlyeshop.account.model.dto.in.ShopDetails;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

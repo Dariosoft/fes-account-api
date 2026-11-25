@@ -3,9 +3,9 @@ package com.friendlyeshop.account.service;
 import com.friendlyeshop.account.exception.NotAuthenticatedException;
 import com.friendlyeshop.account.exception.ShopNotFoundException;
 import com.friendlyeshop.account.model.Shop;
-import com.friendlyeshop.account.model.dto.SessionResponse;
-import com.friendlyeshop.account.model.dto.ShopDetails;
-import com.friendlyeshop.account.model.dto.ShopResponse;
+import com.friendlyeshop.account.model.dto.out.SessionResponse;
+import com.friendlyeshop.account.model.dto.in.ShopDetails;
+import com.friendlyeshop.account.model.dto.out.ShopResponse;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.ShopRepository;
 import java.time.Instant;
@@ -35,7 +35,7 @@ public class ShopService {
         UUID accountId = requireAccountId(sessionId);
         Shop shop = shopRepository.findByAccountId(accountId)
                 .orElseThrow(ShopNotFoundException::ownShopMissing);
-        return toResponse(shop);
+        return ShopResponse.from(shop);
     }
 
     @Transactional
@@ -48,7 +48,7 @@ public class ShopService {
                     return existing;
                 })
                 .orElseGet(() -> Shop.open(accountId, details, now));
-        return toResponse(shopRepository.save(shop));
+        return ShopResponse.from(shopRepository.save(shop));
     }
 
     @Transactional(readOnly = true)
@@ -58,7 +58,7 @@ public class ShopService {
         }
         Shop shop = shopRepository.findByAccountId(accountId)
                 .orElseThrow(ShopNotFoundException::publicShopMissing);
-        return toResponse(shop);
+        return ShopResponse.from(shop);
     }
 
     private UUID requireAccountId(UUID sessionId) {
@@ -67,9 +67,5 @@ public class ShopService {
             throw new NotAuthenticatedException();
         }
         return session.id();
-    }
-
-    private static ShopResponse toResponse(Shop shop) {
-        return new ShopResponse(shop.getName(), shop.getDescription());
     }
 }

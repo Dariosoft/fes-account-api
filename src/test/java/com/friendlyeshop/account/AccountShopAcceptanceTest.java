@@ -10,7 +10,7 @@ import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
 import com.friendlyeshop.account.model.Account;
 import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.model.Shop;
-import com.friendlyeshop.account.model.dto.ShopDetails;
+import com.friendlyeshop.account.model.dto.in.ShopDetails;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.SessionRepository;
 import com.friendlyeshop.account.repository.ShopRepository;

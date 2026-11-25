@@ -1,6 +1,6 @@
 package com.friendlyeshop.account.model;
 
-import com.friendlyeshop.account.model.dto.ShopDetails;
+import com.friendlyeshop.account.model.dto.in.ShopDetails;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

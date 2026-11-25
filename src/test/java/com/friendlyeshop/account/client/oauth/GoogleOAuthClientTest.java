@@ -2,7 +2,7 @@ package com.friendlyeshop.account.client.oauth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import com.friendlyeshop.account.config.AuthProperties;
-import com.friendlyeshop.account.model.dto.GoogleProfile;
+import com.friendlyeshop.account.model.dto.in.GoogleProfileDetails;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import java.util.List;
 import java.util.Optional;
@@ -31,7 +31,7 @@ class GoogleOAuthClientTest {
         payload.set("email", "ada@example.com");
         payload.set("name", "Ada");
 
-        GoogleProfile identity = HttpTokenExchange.toIdentity(payload);
+        GoogleProfileDetails identity = HttpTokenExchange.toIdentity(payload);
 
         assertThat(identity.subject()).isEqualTo("google-sub");
         assertThat(identity.email()).isEqualTo("ada@example.com");
@@ -45,10 +45,10 @@ class GoogleOAuthClientTest {
                 (code, redirectUri) -> {
                     assertThat(code).isEqualTo("auth-code");
                     assertThat(redirectUri).isEqualTo("http://api.example.test/accounts/login/google/callback");
-                    return Optional.of(new GoogleProfile("sub", "a@example.com", "Ada"));
+                    return Optional.of(GoogleProfileDetails.from("sub", "a@example.com", "Ada"));
                 });
 
-        Optional<GoogleProfile> profile = client.exchangeCode("auth-code");
+        Optional<GoogleProfileDetails> profile = client.exchangeCode("auth-code");
         assertThat(profile).isPresent();
         assertThat(profile.orElseThrow().subject()).isEqualTo("sub");
         assertThat(client.exchangeCode("")).isEmpty();

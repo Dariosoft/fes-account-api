@@ -11,7 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.friendlyeshop.account.client.oauth.GoogleOAuthClient;
 import com.friendlyeshop.account.client.oauth.OAuthStateCodec;
 import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
-import com.friendlyeshop.account.model.dto.GoogleProfile;
+import com.friendlyeshop.account.model.dto.in.GoogleProfileDetails;
 import com.friendlyeshop.account.repository.AccountRepository;
 import jakarta.servlet.http.Cookie;
 import java.util.Optional;
@@ -54,7 +54,7 @@ class SharedGoogleSessionAcceptanceTest {
     @BeforeEach
     void resetGoogle() {
         when(googleOAuthClient.exchangeCode(any()))
-                .thenReturn(Optional.of(new GoogleProfile("shared-sub", "shared@example.com", "Shared")));
+                .thenReturn(Optional.of(GoogleProfileDetails.from("shared-sub", "shared@example.com", "Shared")));
     }
 
     @Test

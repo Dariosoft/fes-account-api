@@ -1,9 +1,9 @@
 package com.friendlyeshop.account.controller;
 
 import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
-import com.friendlyeshop.account.model.dto.ShopDetails;
-import com.friendlyeshop.account.model.dto.ShopRequest;
-import com.friendlyeshop.account.model.dto.ShopResponse;
+import com.friendlyeshop.account.model.dto.in.ShopDetails;
+import com.friendlyeshop.account.model.dto.request.ShopRequest;
+import com.friendlyeshop.account.model.dto.out.ShopResponse;
 import com.friendlyeshop.account.service.ShopService;
 import jakarta.validation.Valid;
 import java.util.UUID;

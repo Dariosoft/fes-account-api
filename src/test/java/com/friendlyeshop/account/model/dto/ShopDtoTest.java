@@ -1,6 +1,7 @@
 package com.friendlyeshop.account.model.dto;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import com.friendlyeshop.account.model.dto.out.ShopResponse;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 

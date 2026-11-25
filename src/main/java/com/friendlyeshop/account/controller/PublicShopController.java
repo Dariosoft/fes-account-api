@@ -1,6 +1,6 @@
 package com.friendlyeshop.account.controller;
 
-import com.friendlyeshop.account.model.dto.ShopResponse;
+import com.friendlyeshop.account.model.dto.out.ShopResponse;
 import com.friendlyeshop.account.service.ShopService;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;

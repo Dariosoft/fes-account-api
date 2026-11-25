@@ -1,4 +1,4 @@
-package com.friendlyeshop.account.model.dto;
+package com.friendlyeshop.account.model.dto.request;
 
 import com.friendlyeshop.account.model.Shop;
 import jakarta.validation.constraints.NotBlank;

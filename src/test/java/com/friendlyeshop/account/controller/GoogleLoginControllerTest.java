@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.friendlyeshop.account.config.AuthConfig;
 import com.friendlyeshop.account.config.CorsConfig;
 import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
-import com.friendlyeshop.account.model.dto.CompletedLogin;
+import com.friendlyeshop.account.model.dto.out.CompletedLoginResponse;
 import com.friendlyeshop.account.service.GoogleLoginService;
 import java.util.Optional;
 import java.util.UUID;
@@ -57,7 +57,7 @@ class GoogleLoginControllerTest {
     void callbackSuccessSetsSessionCookieAndRedirects() throws Exception {
         UUID sessionId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         when(googleLoginService.complete("code", "state"))
-                .thenReturn(CompletedLogin.opened("http://store.example.test", sessionId));
+                .thenReturn(CompletedLoginResponse.opened("http://store.example.test", sessionId));
 
         mockMvc.perform(get("/accounts/login/google/callback")
                         .param("code", "code")
@@ -71,7 +71,7 @@ class GoogleLoginControllerTest {
     @Test
     void callbackFailureRedirectsWithLoginErrorWithoutSessionCookie() throws Exception {
         when(googleLoginService.complete("bad", "state"))
-                .thenReturn(CompletedLogin.failed("http://store.example.test?login_error=1"));
+                .thenReturn(CompletedLoginResponse.failed("http://store.example.test?login_error=1"));
 
         mockMvc.perform(get("/accounts/login/google/callback")
                         .param("code", "bad")

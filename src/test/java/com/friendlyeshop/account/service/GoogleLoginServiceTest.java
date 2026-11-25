@@ -10,8 +10,8 @@ import com.friendlyeshop.account.client.oauth.OAuthStateCodec;
 import com.friendlyeshop.account.config.AuthProperties;
 import com.friendlyeshop.account.model.Account;
 import com.friendlyeshop.account.model.Session;
-import com.friendlyeshop.account.model.dto.CompletedLogin;
-import com.friendlyeshop.account.model.dto.GoogleProfile;
+import com.friendlyeshop.account.model.dto.out.CompletedLoginResponse;
+import com.friendlyeshop.account.model.dto.in.GoogleProfileDetails;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.SessionRepository;
 import java.util.HashMap;
@@ -91,13 +91,13 @@ class GoogleLoginServiceTest {
     void firstLoginCreatesAccountAndLaterLoginReusesItWhileUpdatingProfile() {
         rememberSaves();
         when(googleOAuthClient.exchangeCode("code"))
-                .thenReturn(Optional.of(new GoogleProfile("sub-1", "a@example.com", "Ada")));
+                .thenReturn(Optional.of(GoogleProfileDetails.from("sub-1", "a@example.com", "Ada")));
         String state = OAuthStateCodec.encode(STORE);
 
-        CompletedLogin first = service.complete("code", state);
+        CompletedLoginResponse first = service.complete("code", state);
         when(googleOAuthClient.exchangeCode("code"))
-                .thenReturn(Optional.of(new GoogleProfile("sub-1", "new@example.com", "New")));
-        CompletedLogin second = service.complete("code", state);
+                .thenReturn(Optional.of(GoogleProfileDetails.from("sub-1", "new@example.com", "New")));
+        CompletedLoginResponse second = service.complete("code", state);
 
         assertThat(first.success()).isTrue();
         assertThat(second.success()).isTrue();
@@ -115,7 +115,7 @@ class GoogleLoginServiceTest {
     void failedGoogleExchangeRedirectsWithLoginErrorAndCreatesNothing() {
         when(googleOAuthClient.exchangeCode("cancel")).thenReturn(Optional.empty());
 
-        CompletedLogin result = service.complete("cancel", OAuthStateCodec.encode(STORE));
+        CompletedLoginResponse result = service.complete("cancel", OAuthStateCodec.encode(STORE));
 
         assertThat(result.success()).isFalse();
         assertThat(result.sessionId()).isNull();
@@ -127,7 +127,7 @@ class GoogleLoginServiceTest {
 
     @Test
     void invalidStateFailsWithoutOpeningASession() {
-        CompletedLogin result = service.complete("code", "not-a-state");
+        CompletedLoginResponse result = service.complete("code", "not-a-state");
 
         assertThat(result.success()).isFalse();
         assertThat(result.redirectUrl()).isEqualTo("http://localhost");

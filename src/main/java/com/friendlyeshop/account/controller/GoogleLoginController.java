@@ -3,7 +3,7 @@ package com.friendlyeshop.account.controller;
 import com.friendlyeshop.account.constants.OAuthParameters;
 import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
 import com.friendlyeshop.account.model.Session;
-import com.friendlyeshop.account.model.dto.CompletedLogin;
+import com.friendlyeshop.account.model.dto.out.CompletedLoginResponse;
 import com.friendlyeshop.account.service.GoogleLoginService;
 import java.net.URI;
 import java.time.Duration;
@@ -42,7 +42,7 @@ public class GoogleLoginController {
     public ResponseEntity<Void> callback(
             @RequestParam(value = OAuthParameters.CODE, required = false) String code,
             @RequestParam(value = OAuthParameters.STATE, required = false) String state) {
-        CompletedLogin result = googleLoginService.complete(code, state);
+        CompletedLoginResponse result = googleLoginService.complete(code, state);
         ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.FOUND)
                 .location(URI.create(result.redirectUrl()));
         if (result.success() && result.sessionId() != null) {
