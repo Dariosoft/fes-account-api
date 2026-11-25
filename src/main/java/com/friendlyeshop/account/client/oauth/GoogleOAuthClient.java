@@ -1,7 +1,7 @@
 package com.friendlyeshop.account.client.oauth;
 
 import com.friendlyeshop.account.config.AuthProperties;
-import com.friendlyeshop.account.model.dto.GoogleProfile;
+import com.friendlyeshop.account.model.dto.in.GoogleProfileDetails;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeRequestUrl;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
@@ -41,7 +41,7 @@ public class GoogleOAuthClient {
                 .build();
     }
 
-    public Optional<GoogleProfile> exchangeCode(String code) {
+    public Optional<GoogleProfileDetails> exchangeCode(String code) {
         if (code == null || code.isBlank()) {
             return Optional.empty();
         }

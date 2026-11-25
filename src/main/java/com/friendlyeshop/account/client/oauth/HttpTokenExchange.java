@@ -2,7 +2,7 @@ package com.friendlyeshop.account.client.oauth;
 
 import com.friendlyeshop.account.config.AuthProperties;
 import com.friendlyeshop.account.constants.GoogleClaims;
-import com.friendlyeshop.account.model.dto.GoogleProfile;
+import com.friendlyeshop.account.model.dto.in.GoogleProfileDetails;
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeTokenRequest;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
@@ -26,7 +26,7 @@ final class HttpTokenExchange implements TokenExchange {
     }
 
     @Override
-    public Optional<GoogleProfile> exchange(String code, String redirectUri)
+    public Optional<GoogleProfileDetails> exchange(String code, String redirectUri)
             throws IOException, GeneralSecurityException {
         GoogleTokenResponse tokenResponse = new GoogleAuthorizationCodeTokenRequest(
                 transport,
@@ -46,12 +46,12 @@ final class HttpTokenExchange implements TokenExchange {
         return Optional.of(toIdentity(idToken.getPayload()));
     }
 
-    static GoogleProfile toIdentity(GoogleIdToken.Payload payload) {
+    static GoogleProfileDetails toIdentity(GoogleIdToken.Payload payload) {
         String email = (String) payload.get(GoogleClaims.EMAIL);
         String name = (String) payload.get(GoogleClaims.NAME);
         if (name == null || name.isBlank()) {
             name = email;
         }
-        return new GoogleProfile(payload.getSubject(), email, name);
+        return GoogleProfileDetails.from(payload.getSubject(), email, name);
     }
 }

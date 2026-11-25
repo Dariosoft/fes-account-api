@@ -1,7 +1,7 @@
 package com.friendlyeshop.account.service;
 
 import com.friendlyeshop.account.model.Account;
-import com.friendlyeshop.account.model.dto.SessionResponse;
+import com.friendlyeshop.account.model.dto.out.SessionResponse;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.SessionRepository;
 import java.time.Instant;

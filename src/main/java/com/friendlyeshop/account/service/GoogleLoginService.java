@@ -7,8 +7,8 @@ import com.friendlyeshop.account.constants.LoginRedirects;
 import com.friendlyeshop.account.constants.OAuthParameters;
 import com.friendlyeshop.account.model.Account;
 import com.friendlyeshop.account.model.Session;
-import com.friendlyeshop.account.model.dto.CompletedLogin;
-import com.friendlyeshop.account.model.dto.GoogleProfile;
+import com.friendlyeshop.account.model.dto.out.CompletedLoginResponse;
+import com.friendlyeshop.account.model.dto.in.GoogleProfileDetails;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.SessionRepository;
 import java.net.URI;
@@ -47,23 +47,23 @@ public class GoogleLoginService {
     }
 
     @Transactional
-    public CompletedLogin complete(String code, String state) {
+    public CompletedLoginResponse complete(String code, String state) {
         Optional<String> returnTo = OAuthStateCodec.returnTo(state);
         if (returnTo.isEmpty()) {
-            return CompletedLogin.failed(LoginRedirects.FALLBACK_URL);
+            return CompletedLoginResponse.failed(LoginRedirects.FALLBACK_URL);
         }
         String destination = returnTo.get();
-        Optional<GoogleProfile> profile = googleOAuthClient.exchangeCode(code);
+        Optional<GoogleProfileDetails> profile = googleOAuthClient.exchangeCode(code);
         if (profile.isEmpty()) {
-            return CompletedLogin.failed(withLoginError(destination));
+            return CompletedLoginResponse.failed(withLoginError(destination));
         }
         Account account = saveAccount(profile.get());
         Session session = Session.open(account.getId(), Instant.now());
         sessionRepository.save(session);
-        return CompletedLogin.opened(destination, session.getId());
+        return CompletedLoginResponse.opened(destination, session.getId());
     }
 
-    private Account saveAccount(GoogleProfile profile) {
+    private Account saveAccount(GoogleProfileDetails profile) {
         Instant now = Instant.now();
         Optional<Account> existing = accountRepository.findByGoogleSub(profile.subject());
         if (existing.isPresent()) {

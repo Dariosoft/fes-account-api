@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import com.friendlyeshop.account.model.Account;
 import com.friendlyeshop.account.model.Session;
-import com.friendlyeshop.account.model.dto.SessionResponse;
+import com.friendlyeshop.account.model.dto.out.SessionResponse;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.SessionRepository;
 import java.time.Instant;

@@ -1,4 +1,4 @@
-package com.friendlyeshop.account.model.dto;
+package com.friendlyeshop.account.model.dto.out;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.util.UUID;
