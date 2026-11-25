@@ -2,6 +2,7 @@ package com.friendlyeshop.account.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import com.friendlyeshop.account.model.dto.ShopDetails;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -13,7 +14,7 @@ class ShopTest {
 
     @Test
     void openTrimsNameAndDescription() {
-        Shop shop = Shop.open(ACCOUNT_ID, "  Tienda de Ada  ", "  Cosas bonitas  ", NOW);
+        Shop shop = Shop.open(ACCOUNT_ID, new ShopDetails("  Tienda de Ada  ", "  Cosas bonitas  "), NOW);
 
         assertThat(shop.getName()).isEqualTo("Tienda de Ada");
         assertThat(shop.getDescription()).isEqualTo("Cosas bonitas");
@@ -24,8 +25,8 @@ class ShopTest {
 
     @Test
     void acceptsNameWithOneAndEightyCharacters() {
-        Shop single = Shop.open(ACCOUNT_ID, "a", null, NOW);
-        Shop max = Shop.open(ACCOUNT_ID, "a".repeat(Shop.NAME_MAX_LENGTH), null, NOW);
+        Shop single = Shop.open(ACCOUNT_ID, new ShopDetails("a", null), NOW);
+        Shop max = Shop.open(ACCOUNT_ID, new ShopDetails("a".repeat(Shop.NAME_MAX_LENGTH), null), NOW);
 
         assertThat(single.getName()).hasSize(1);
         assertThat(max.getName()).hasSize(Shop.NAME_MAX_LENGTH);
@@ -33,35 +34,37 @@ class ShopTest {
 
     @Test
     void rejectsMissingBlankOrTooLongName() {
-        assertThatThrownBy(() -> Shop.open(ACCOUNT_ID, null, null, NOW))
+        assertThatThrownBy(() -> Shop.open(ACCOUNT_ID, new ShopDetails(null, null), NOW))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> Shop.open(ACCOUNT_ID, "   ", null, NOW))
+        assertThatThrownBy(() -> Shop.open(ACCOUNT_ID, new ShopDetails("   ", null), NOW))
                 .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> Shop.open(ACCOUNT_ID, "a".repeat(Shop.NAME_MAX_LENGTH + 1), null, NOW))
+        assertThatThrownBy(() -> Shop.open(
+                        ACCOUNT_ID, new ShopDetails("a".repeat(Shop.NAME_MAX_LENGTH + 1), null), NOW))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void mapsMissingBlankDescriptionToNull() {
-        assertThat(Shop.open(ACCOUNT_ID, "Tienda", null, NOW).getDescription()).isNull();
-        assertThat(Shop.open(ACCOUNT_ID, "Tienda", "   ", NOW).getDescription()).isNull();
+        assertThat(Shop.open(ACCOUNT_ID, new ShopDetails("Tienda", null), NOW).getDescription()).isNull();
+        assertThat(Shop.open(ACCOUNT_ID, new ShopDetails("Tienda", "   "), NOW).getDescription()).isNull();
     }
 
     @Test
     void acceptsDescriptionWithMaximumLengthAndRejectsLonger() {
-        Shop max = Shop.open(ACCOUNT_ID, "Tienda", "d".repeat(Shop.DESCRIPTION_MAX_LENGTH), NOW);
+        Shop max = Shop.open(
+                ACCOUNT_ID, new ShopDetails("Tienda", "d".repeat(Shop.DESCRIPTION_MAX_LENGTH)), NOW);
 
         assertThat(max.getDescription()).hasSize(Shop.DESCRIPTION_MAX_LENGTH);
-        assertThatThrownBy(() -> Shop.open(ACCOUNT_ID, "Tienda",
-                "d".repeat(Shop.DESCRIPTION_MAX_LENGTH + 1), NOW))
+        assertThatThrownBy(() -> Shop.open(ACCOUNT_ID, new ShopDetails("Tienda",
+                "d".repeat(Shop.DESCRIPTION_MAX_LENGTH + 1)), NOW))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void updateDetailsReplacesDataAndTimestamp() {
-        Shop shop = Shop.open(ACCOUNT_ID, "Tienda", "Vieja", NOW);
+        Shop shop = Shop.open(ACCOUNT_ID, new ShopDetails("Tienda", "Vieja"), NOW);
 
-        shop.updateDetails("  Nueva tienda  ", "  Nueva descripción  ", NOW.plusSeconds(60));
+        shop.updateDetails(new ShopDetails("  Nueva tienda  ", "  Nueva descripción  "), NOW.plusSeconds(60));
 
         assertThat(shop.getName()).isEqualTo("Nueva tienda");
         assertThat(shop.getDescription()).isEqualTo("Nueva descripción");

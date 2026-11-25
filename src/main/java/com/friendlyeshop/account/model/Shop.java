@@ -1,5 +1,6 @@
 package com.friendlyeshop.account.model;
 
+import com.friendlyeshop.account.model.dto.ShopDetails;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -38,21 +39,21 @@ public class Shop {
     protected Shop() {
     }
 
-    public static Shop open(UUID accountId, String name, String description, Instant now) {
+    public static Shop open(UUID accountId, ShopDetails details, Instant now) {
         Instant createdAt = Objects.requireNonNull(now, "now");
         Shop shop = new Shop();
         shop.id = UUID.randomUUID();
         shop.accountId = Objects.requireNonNull(accountId, "accountId");
-        shop.name = normalizeName(name);
-        shop.description = normalizeDescription(description);
+        shop.name = normalizeName(details.name());
+        shop.description = normalizeDescription(details.description());
         shop.createdAt = createdAt;
         shop.updatedAt = createdAt;
         return shop;
     }
 
-    public void updateDetails(String name, String description, Instant now) {
-        this.name = normalizeName(name);
-        this.description = normalizeDescription(description);
+    public void updateDetails(ShopDetails details, Instant now) {
+        this.name = normalizeName(details.name());
+        this.description = normalizeDescription(details.description());
         this.updatedAt = Objects.requireNonNull(now, "now");
     }
 

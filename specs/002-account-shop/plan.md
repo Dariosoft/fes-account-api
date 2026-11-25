@@ -43,7 +43,8 @@ Se reutiliza la sesión existente (`fes_session` + `SessionService`) para resolv
 ```
 com.friendlyeshop.account
   controller/
-    ShopController            (nuevo: GET /shop, PUT /shop, GET /shops/{accountId})
+    ShopController            (nuevo: GET /shop, PUT /shop)
+    PublicShopController      (nuevo: GET /shops/{accountId})
     SessionController         (sin cambios)
     GoogleLoginController     (sin cambios)
   service/
@@ -122,7 +123,8 @@ Reglas de validación (medidas sobre el texto recortado):
   - `readOwnShop(sessionId)`: resuelve la cuenta vía `SessionService.read`; sin sesión → `NotAuthenticatedException`; sin tienda → `ShopNotFoundException` (mensaje de tienda propia); con tienda → `ShopResponse`.
   - `saveOwnShop(sessionId, name, description)`: resuelve la cuenta; `findByAccountId` y crea con `Shop.open` o actualiza con `updateDetails`; devuelve `ShopResponse` (upsert).
   - `readPublicShop(accountId)`: `AccountRepository.existsById` para distinguir cuenta inexistente (`ACCOUNT_NOT_FOUND`) de cuenta sin tienda (`SHOP_NOT_FOUND`); devuelve `ShopResponse` sin datos privados.
-- **`controller/ShopController` (nuevo)**: controlador delgado; `@CookieValue(COOKIE_NAME, required = false)` en los endpoints propios; `@Valid @RequestBody ShopRequest` en `PUT`; traduce servicio → `ShopResponse` y delega errores al advice.
+- **`controller/ShopController` (nuevo)**: controlador delgado con `@RequestMapping("/shop")`; `@CookieValue(COOKIE_NAME, required = false)` en los endpoints propios; `@Valid @RequestBody ShopRequest` en `PUT`; traduce servicio → `ShopResponse` y delega errores al advice.
+- **`controller/PublicShopController` (nuevo)**: controlador delgado con `@RequestMapping("/shops")`; `GET /{accountId}` público sin cookie para la lectura anónima.
 - **`exception/ShopNotFoundException` (nuevo)**: lleva `error` y `message` para los tres 404 diferenciados.
 - **`exception/NotAuthenticatedException` (nuevo)**: 401 de tienda propia sin sesión.
 - **`exception/GlobalExceptionHandler` (nuevo)**: `@RestControllerAdvice` acotado a `ShopNotFoundException`, `NotAuthenticatedException` y `MethodArgumentNotValidException`; no altera el comportamiento de controladores existentes.

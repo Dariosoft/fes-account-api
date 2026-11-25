@@ -11,6 +11,7 @@ import com.friendlyeshop.account.exception.NotAuthenticatedException;
 import com.friendlyeshop.account.exception.ShopNotFoundException;
 import com.friendlyeshop.account.model.Shop;
 import com.friendlyeshop.account.model.dto.SessionResponse;
+import com.friendlyeshop.account.model.dto.ShopDetails;
 import com.friendlyeshop.account.model.dto.ShopResponse;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.ShopRepository;
@@ -61,7 +62,7 @@ class ShopServiceTest {
     void rejectsSaveWithoutSessionWithoutTouchingShopRepository() {
         when(sessionService.read(null)).thenReturn(SessionResponse.anonymous());
 
-        assertThatThrownBy(() -> shopService.saveOwnShop(null, "Tienda", null))
+        assertThatThrownBy(() -> shopService.saveOwnShop(null, new ShopDetails("Tienda", null)))
                 .isInstanceOf(NotAuthenticatedException.class);
 
         verifyNoInteractions(shopRepository);
@@ -73,7 +74,8 @@ class ShopServiceTest {
         when(shopRepository.findByAccountId(ACCOUNT_ID)).thenReturn(Optional.empty());
         when(shopRepository.save(any(Shop.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ShopResponse response = shopService.saveOwnShop(SESSION_ID, "  Tienda de Ada  ", "  Cosas  ");
+        ShopResponse response = shopService.saveOwnShop(
+                SESSION_ID, new ShopDetails("  Tienda de Ada  ", "  Cosas  "));
 
         Shop saved = captureSavedShop();
         assertThat(saved.getAccountId()).isEqualTo(ACCOUNT_ID);
@@ -85,11 +87,11 @@ class ShopServiceTest {
     @Test
     void secondSaveUpdatesTheSameShopWithoutCreatingAnother() {
         authenticate(ACCOUNT_ID);
-        Shop existing = Shop.open(ACCOUNT_ID, "Vieja", "Vieja descripción", NOW);
+        Shop existing = Shop.open(ACCOUNT_ID, new ShopDetails("Vieja", "Vieja descripción"), NOW);
         when(shopRepository.findByAccountId(ACCOUNT_ID)).thenReturn(Optional.of(existing));
         when(shopRepository.save(any(Shop.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        ShopResponse response = shopService.saveOwnShop(SESSION_ID, "Nueva", null);
+        ShopResponse response = shopService.saveOwnShop(SESSION_ID, new ShopDetails("Nueva", null));
 
         Shop saved = captureSavedShop();
         assertThat(saved.getId()).isEqualTo(existing.getId());
@@ -106,7 +108,7 @@ class ShopServiceTest {
         when(shopRepository.findByAccountId(OTHER_ACCOUNT_ID)).thenReturn(Optional.empty());
         when(shopRepository.save(any(Shop.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        shopService.saveOwnShop(SESSION_ID, "Tienda B", null);
+        shopService.saveOwnShop(SESSION_ID, new ShopDetails("Tienda B", null));
 
         verify(shopRepository, never()).findByAccountId(ACCOUNT_ID);
         assertThat(captureSavedShop().getAccountId()).isEqualTo(OTHER_ACCOUNT_ID);
@@ -115,7 +117,7 @@ class ShopServiceTest {
     @Test
     void readsOwnShopWhenItExists() {
         authenticate(ACCOUNT_ID);
-        Shop shop = Shop.open(ACCOUNT_ID, "Tienda", "Descripción", NOW);
+        Shop shop = Shop.open(ACCOUNT_ID, new ShopDetails("Tienda", "Descripción"), NOW);
         when(shopRepository.findByAccountId(ACCOUNT_ID)).thenReturn(Optional.of(shop));
 
         ShopResponse response = shopService.readOwnShop(SESSION_ID);
@@ -137,7 +139,7 @@ class ShopServiceTest {
 
     @Test
     void readsPublicShopExposingOnlyNameAndDescription() {
-        Shop shop = Shop.open(ACCOUNT_ID, "Tienda", "Descripción", NOW);
+        Shop shop = Shop.open(ACCOUNT_ID, new ShopDetails("Tienda", "Descripción"), NOW);
         when(accountRepository.existsById(ACCOUNT_ID)).thenReturn(true);
         when(shopRepository.findByAccountId(ACCOUNT_ID)).thenReturn(Optional.of(shop));
 

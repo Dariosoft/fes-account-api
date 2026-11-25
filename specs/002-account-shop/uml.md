@@ -85,6 +85,10 @@ classDiagram
         -ShopService shopService
         +getOwn(sessionId) ShopResponse
         +saveOwn(sessionId, request) ShopResponse
+    }
+
+    class PublicShopController {
+        -ShopService shopService
         +getPublic(accountId) ShopResponse
     }
 
@@ -167,6 +171,7 @@ classDiagram
     }
 
     ShopController --> ShopService
+    PublicShopController --> ShopService
     ShopController ..> ShopRequest
     ShopController ..> ShopResponse
     ShopController ..> SessionCookieWriter : COOKIE_NAME
@@ -186,7 +191,7 @@ classDiagram
 
 ## Notas de contrato
 
-- **Prefijo**: `ApiPathConfig` publica todo `controller/` bajo `/accounts`; el controlador solo declara `/shop` y `/shops/{accountId}`.
+- **Prefijo**: `ApiPathConfig` publica todo `controller/` bajo `/accounts`; `ShopController` declara `/shop` y `PublicShopController` declara `/shops`.
 - **Sesión**: cookie `fes_session` (HttpOnly, SameSite=Lax, Path=/) resuelta con `SessionService.read`; no se inventa autenticación y no se modifica CORS ni `ApiPathConfig`.
 - **Guardado (upsert)**: `PUT /accounts/shop` → `200 {name, description|null}`; crea si no existe y reemplaza si existe; una sola fila por cuenta (`UNIQUE (account_id)`).
 - **Consulta propia**: `GET /accounts/shop` → `200 {name, description|null}` o `404` si aún no hay tienda; `401` sin sesión.

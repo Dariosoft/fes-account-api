@@ -4,6 +4,7 @@ import com.friendlyeshop.account.exception.NotAuthenticatedException;
 import com.friendlyeshop.account.exception.ShopNotFoundException;
 import com.friendlyeshop.account.model.Shop;
 import com.friendlyeshop.account.model.dto.SessionResponse;
+import com.friendlyeshop.account.model.dto.ShopDetails;
 import com.friendlyeshop.account.model.dto.ShopResponse;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.ShopRepository;
@@ -38,12 +39,15 @@ public class ShopService {
     }
 
     @Transactional
-    public ShopResponse saveOwnShop(UUID sessionId, String name, String description) {
+    public ShopResponse saveOwnShop(UUID sessionId, ShopDetails details) {
         UUID accountId = requireAccountId(sessionId);
         Instant now = Instant.now();
         Shop shop = shopRepository.findByAccountId(accountId)
-                .map(existing -> updateDetails(existing, name, description, now))
-                .orElseGet(() -> Shop.open(accountId, name, description, now));
+                .map(existing -> {
+                    existing.updateDetails(details, now);
+                    return existing;
+                })
+                .orElseGet(() -> Shop.open(accountId, details, now));
         return toResponse(shopRepository.save(shop));
     }
 
@@ -63,11 +67,6 @@ public class ShopService {
             throw new NotAuthenticatedException();
         }
         return session.id();
-    }
-
-    private static Shop updateDetails(Shop shop, String name, String description, Instant now) {
-        shop.updateDetails(name, description, now);
-        return shop;
     }
 
     private static ShopResponse toResponse(Shop shop) {

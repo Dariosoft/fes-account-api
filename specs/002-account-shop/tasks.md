@@ -57,12 +57,12 @@ Implementación paso a paso de `spec.md` / `plan.md` para `account-api`. Cada ta
 
 - [x] **T10. Endpoints propios `GET` y `PUT /accounts/shop`**
   Cubre: **RF-2**, **RF-3**, **RF-4**, **RF-11**.
-  `controller/ShopController` delgado: `GET /shop` y `PUT /shop` con `@CookieValue(SessionCookieWriter.COOKIE_NAME, required = false)`; `PUT` recibe `@Valid @RequestBody ShopRequest`. No declarar `/accounts` (lo aporta `ApiPathConfig`).
+  `controller/ShopController` delgado con `@RequestMapping("/shop")`: `@GetMapping` y `@PutMapping` relativos, con `@CookieValue(SessionCookieWriter.COOKIE_NAME, required = false)`; `PUT` recibe `@Valid @RequestBody ShopRequest`. No declarar `/accounts` (lo aporta `ApiPathConfig`).
   **Done when:** `ShopControllerTest` (MockMvc) confirma `GET` con cookie → 200, `GET` sin cookie → 401, `PUT` válido → 200 con upsert y `PUT` sin cookie → 401.
 
 - [x] **T11. Endpoint público `GET /accounts/shops/{accountId}`**
   Cubre: **RF-12**, **RF-13**, **RF-14**, **RF-15**.
-  Añadir `GET /shops/{accountId}` en `ShopController`, sin cookie; devuelve `ShopResponse`.
+  Crear `controller/PublicShopController` con `@RequestMapping("/shops")` y `@GetMapping("/{accountId}")` sin cookie; devuelve `ShopResponse`.
   **Done when:** `ShopControllerTest` confirma `200 {name, description|null}` sin sesión, `404` para vendedor sin tienda y `404` para cuenta inexistente, sin `email` en el JSON.
 
 - [x] **T12. Validación web con `400` en español**

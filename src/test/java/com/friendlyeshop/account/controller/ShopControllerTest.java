@@ -13,6 +13,7 @@ import com.friendlyeshop.account.config.AuthConfig;
 import com.friendlyeshop.account.exception.NotAuthenticatedException;
 import com.friendlyeshop.account.exception.ShopNotFoundException;
 import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
+import com.friendlyeshop.account.model.dto.ShopDetails;
 import com.friendlyeshop.account.model.dto.ShopResponse;
 import com.friendlyeshop.account.service.ShopService;
 import jakarta.servlet.http.Cookie;
@@ -26,7 +27,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(controllers = ShopController.class)
+@WebMvcTest(controllers = {ShopController.class, PublicShopController.class})
 @Import(AuthConfig.class)
 class ShopControllerTest {
     private static final UUID ACCOUNT_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
@@ -60,7 +61,7 @@ class ShopControllerTest {
 
     @Test
     void savingShopDelegatesTrimmedDataToService() throws Exception {
-        when(shopService.saveOwnShop(SESSION_ID, "Tienda de Ada", "Cosas bonitas"))
+        when(shopService.saveOwnShop(SESSION_ID, new ShopDetails("Tienda de Ada", "Cosas bonitas")))
                 .thenReturn(new ShopResponse("Tienda de Ada", "Cosas bonitas"));
 
         mockMvc.perform(put("/accounts/shop")
@@ -71,12 +72,13 @@ class ShopControllerTest {
                 .andExpect(jsonPath("$.name").value("Tienda de Ada"))
                 .andExpect(jsonPath("$.description").value("Cosas bonitas"));
 
-        verify(shopService).saveOwnShop(SESSION_ID, "Tienda de Ada", "Cosas bonitas");
+        verify(shopService).saveOwnShop(SESSION_ID, new ShopDetails("Tienda de Ada", "Cosas bonitas"));
     }
 
     @Test
     void savingShopRequiresSession() throws Exception {
-        when(shopService.saveOwnShop(null, "Tienda", null)).thenThrow(new NotAuthenticatedException());
+        when(shopService.saveOwnShop(null, new ShopDetails("Tienda", null)))
+                .thenThrow(new NotAuthenticatedException());
 
         mockMvc.perform(put("/accounts/shop")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -157,7 +159,8 @@ class ShopControllerTest {
 
     @Test
     void savesBlankDescriptionAsNull() throws Exception {
-        when(shopService.saveOwnShop(SESSION_ID, "Tienda", null)).thenReturn(new ShopResponse("Tienda", null));
+        when(shopService.saveOwnShop(SESSION_ID, new ShopDetails("Tienda", null)))
+                .thenReturn(new ShopResponse("Tienda", null));
 
         mockMvc.perform(put("/accounts/shop")
                         .cookie(sessionCookie())
@@ -166,7 +169,7 @@ class ShopControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value(nullValue()));
 
-        verify(shopService).saveOwnShop(SESSION_ID, "Tienda", null);
+        verify(shopService).saveOwnShop(SESSION_ID, new ShopDetails("Tienda", null));
     }
 
     private void assertValidationError(String body, String expectedMessage) throws Exception {

@@ -10,6 +10,7 @@ import com.friendlyeshop.account.http.cookie.SessionCookieWriter;
 import com.friendlyeshop.account.model.Account;
 import com.friendlyeshop.account.model.Session;
 import com.friendlyeshop.account.model.Shop;
+import com.friendlyeshop.account.model.dto.ShopDetails;
 import com.friendlyeshop.account.repository.AccountRepository;
 import com.friendlyeshop.account.repository.SessionRepository;
 import com.friendlyeshop.account.repository.ShopRepository;
@@ -120,7 +121,8 @@ class AccountShopAcceptanceTest {
         Account seller = accountRepository.save(
                 Account.open("owner-sub", "owner@example.com", "Owner", Instant.now()));
         UUID sellerSessionId = sessionRepository.save(Session.open(seller.getId(), Instant.now())).getId();
-        shopRepository.save(Shop.open(seller.getId(), "Tienda del dueño", "Original", Instant.now()));
+        shopRepository.save(Shop.open(
+                seller.getId(), new ShopDetails("Tienda del dueño", "Original"), Instant.now()));
 
         Account other = accountRepository.save(
                 Account.open("other-sub", "other@example.com", "Other", Instant.now()));
